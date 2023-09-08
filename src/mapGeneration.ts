@@ -1,6 +1,12 @@
 import _ from 'lodash'
 import { GameMap, Point, TileType } from './types'
-import { createCorridorRectangle, createGameMap, getDistance, getUnvisitedNeighbors } from './utils'
+import {
+  createCorridorRectangle,
+  createGameMap,
+  getDistance,
+  getNeighbors,
+  getUnvisitedNeighbors,
+} from './utils'
 
 /**
  * Grows a room from the specified origin point within a game map. The room growth process is limited by the specified maximum size.
@@ -106,4 +112,65 @@ export const generateMaze = (
   }
 
   return map
+}
+
+/**
+ * Removes isolated corridor tiles that do not connect to any room or room-origin tiles.
+ *
+ * The function uses a flood fill algorithm that starts from `ROOM_ORIGIN` tiles and then
+ * propagates to adjacent corridor tiles. After the flood fill, any corridor tiles that
+ * were not visited are considered isolated and are thus transformed back to `WALL` tiles.
+ *
+ * @param {GameMap} map - The input game map with tiles information.
+ * @returns {GameMap} A new game map with isolated corridor tiles removed.
+ *
+ * @example
+ * const newMap = removeIsolatedCorridors(oldMap);
+ */
+export const removeIsolatedCorridors = (map: GameMap): GameMap => {
+  const newMap = _.cloneDeep(map)
+  const visited: boolean[][] = Array(newMap.tiles.length)
+    .fill(null)
+    .map(() => Array(newMap.tiles[0].length).fill(false))
+
+  // Flood fill starting from rooms or room origins
+  const floodFill = (x: number, y: number) => {
+    if (visited[x][y] || newMap.tiles[x][y] === TileType.WALL) {
+      return
+    }
+
+    visited[x][y] = true
+
+    if (
+      newMap.tiles[x][y] === TileType.CORRIDOR ||
+      newMap.tiles[x][y] === TileType.ROOM ||
+      newMap.tiles[x][y] === TileType.ROOM_ORIGIN
+    ) {
+      for (const neighbor of getNeighbors(x, y, newMap)) {
+        floodFill(neighbor.x, neighbor.y)
+      }
+    }
+  }
+
+  // Start the flood fill from all room-origin tiles (or any room tile)
+  for (let x = 0; x < newMap.tiles.length; x++) {
+    for (let y = 0; y < newMap.tiles[0].length; y++) {
+      if (newMap.tiles[x][y] === TileType.ROOM_ORIGIN) {
+        floodFill(x, y)
+      }
+    }
+  }
+
+  return {
+    ...newMap,
+    // Any corridor tile that wasn't visited during the flood fill is isolated
+    tiles: newMap.tiles.map((row, x) =>
+      row.map((tile, y) => {
+        if (!visited[x][y] && tile === TileType.CORRIDOR) {
+          return TileType.WALL
+        }
+        return tile
+      }),
+    ),
+  }
 }

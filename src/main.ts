@@ -1,11 +1,12 @@
 import { writeFileSync } from 'fs'
 import { renderGameMapToImage } from './renderer'
-import { generateMaze, growRoom } from './mapGeneration'
+import { generateMaze, growRoom, removeIsolatedCorridors } from './mapGeneration'
 import {
   findNearestTile,
   getDistance,
   getPossibleIntersections,
   isWithinDistanceFromBorder,
+  removeMapBorders,
 } from './utils'
 import _ from 'lodash'
 import { TileType } from './types'
@@ -34,7 +35,6 @@ const generateMap = () => {
   const ROOM_SIZE = Math.PI * ROOM_MAX_RADIUS ** 2
   const ROOM_SIZE_MIN = 0.75
   const ROOM_SIZE_MAX = 0.5
-  const ROOM_SPAWN_CHANCE = 0.1
 
   let globalMap = generateMaze(MAP_WIDTH, MAP_HEIGHT, WALL_STEP, CORRIDOR_STEP)
 
@@ -59,6 +59,9 @@ const generateMap = () => {
       globalMap = growRoom(globalMap, intersection.x, intersection.y, roomSize, ROOM_MAX_RADIUS)
     }
   }
+
+  globalMap = removeMapBorders(globalMap, CORRIDOR_STEP)
+  globalMap = removeIsolatedCorridors(globalMap)
 
   const imageBuffer = renderGameMapToImage(globalMap)
   writeFileSync('output.png', imageBuffer)

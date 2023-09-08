@@ -224,3 +224,53 @@ export const isWithinDistanceFromBorder = (
 
   return x <= distance || y <= distance || x >= maxX - distance || y >= maxY - distance
 }
+
+/**
+ * Removes the borders of the given map and returns a new map without mutating the original.
+ *
+ * @param map - The game map from which borders need to be removed.
+ * @param corridorStep - The size variable which determines the width and height of the corridor rectangle.
+ * @returns A new game map without the outer borders.
+ */
+export const removeMapBorders = (map: GameMap, corridorStep: number): GameMap => {
+  const newMap = _.cloneDeep(map)
+  newMap.tiles = newMap.tiles
+    .slice(corridorStep, -corridorStep)
+    .map((row) => row.slice(corridorStep, -corridorStep))
+
+  return newMap
+}
+
+/**
+ * Retrieves the neighboring tiles of a given point on the game map.
+ *
+ * The function typically checks for tiles immediately adjacent to the given point.
+ * This may include tiles above, below, to the left, and to the right of the point.
+ *
+ * @param {number} x - The x-coordinate of the point.
+ * @param {number} y - The y-coordinate of the point.
+ * @param {GameMap} map - The game map to search for neighbors.
+ * @returns {Point[]} An array of neighboring points.
+ *
+ * @example
+ * const neighbors = getNeighbors(5, 5, gameMap);
+ */
+export const getNeighbors = (x: number, y: number, map: GameMap): Point[] => {
+  const directions = [
+    { x: 0, y: 1 },
+    { x: 1, y: 0 },
+    { x: 0, y: -1 },
+    { x: -1, y: 0 },
+  ]
+  const neighbors: Point[] = []
+
+  for (const dir of directions) {
+    const newX = x + dir.x
+    const newY = y + dir.y
+    if (newX >= 0 && newY >= 0 && newX < map.tiles.length && newY < map.tiles[0].length) {
+      neighbors.push({ x: newX, y: newY })
+    }
+  }
+
+  return neighbors
+}
