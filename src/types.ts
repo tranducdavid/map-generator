@@ -25,3 +25,8 @@ export type GameMap = {
   tiles: (TileType | null)[][]
   edges: (Edge | null)[][]
 }
+
+export type Point = {
+  x: number
+  y: number
+}
