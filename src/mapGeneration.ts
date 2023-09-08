@@ -1,3 +1,4 @@
+import _ from 'lodash'
 import { GameMap, Point, TileType } from './types'
 import { createCorridorRectangle, createGameMap } from './utils'
 
@@ -26,6 +27,77 @@ const getUnvisitedNeighbors = (x: number, y: number, map: GameMap, step: number)
   }
 
   return neighbors
+}
+
+/**
+ * Randomly grows a room from a starting point, attempting to make it look more natural.
+ *
+ * @param map - The current game map.
+ * @param startX - The x-coordinate of the starting point.
+ * @param startY - The y-coordinate of the starting point.
+ * @param maxRoomSize - The maximum size of the room.
+ * @returns A new game map with the room added.
+ */
+const growRoom = (map: GameMap, startX: number, startY: number, maxRoomSize: number): GameMap => {
+  let newMap = _.cloneDeep(map)
+  let roomTiles: Point[] = [{ x: startX, y: startY }]
+  let roomSize = 1
+
+  while (roomSize < maxRoomSize && roomTiles.length) {
+    const currentTile = roomTiles.shift()!
+
+    const neighbors = [
+      { x: currentTile.x + 1, y: currentTile.y },
+      { x: currentTile.x - 1, y: currentTile.y },
+      { x: currentTile.x, y: currentTile.y + 1 },
+      { x: currentTile.x, y: currentTile.y - 1 },
+    ]
+
+    for (const neighbor of neighbors) {
+      // Check if the neighbor is within the map bounds and is a wall.
+      if (
+        neighbor.x >= 0 &&
+        neighbor.x < newMap.tiles.length &&
+        neighbor.y >= 0 &&
+        neighbor.y < newMap.tiles[0].length &&
+        newMap.tiles[neighbor.x][neighbor.y] === TileType.WALL
+      ) {
+        // Randomize the inclusion of neighbors to make the room look more "organic"
+        if (Math.random() > 0.2) {
+          newMap.tiles[neighbor.x][neighbor.y] = TileType.CORRIDOR
+          roomTiles.push(neighbor)
+          roomSize++
+        }
+      }
+    }
+  }
+
+  return newMap
+}
+
+/**
+ * Adds organic rooms to the generated maze.
+ *
+ * @param map - The current game map.
+ * @param numberOfRooms - Number of rooms to add.
+ * @returns A new game map with rooms added.
+ */
+const addRoomsToMaze = (map: GameMap, numberOfRooms: number): GameMap => {
+  let newMap = _.cloneDeep(map)
+  for (let i = 0; i < numberOfRooms; i++) {
+    // Random starting point
+    const startX = Math.floor(Math.random() * newMap.tiles.length)
+    const startY = Math.floor(Math.random() * newMap.tiles[0].length)
+
+    // Random room size
+    const maxRoomSize = Math.floor(Math.random() * 40) + 10 // e.g. rooms between 10 and 50 tiles
+
+    // If the starting point is a wall, start growing the room.
+    if (newMap.tiles[startX][startY] === TileType.WALL) {
+      newMap = growRoom(newMap, startX, startY, maxRoomSize)
+    }
+  }
+  return newMap
 }
 
 /**
@@ -76,5 +148,5 @@ export const generateMaze = (
     }
   }
 
-  return map
+  return addRoomsToMaze(map, 3)
 }
