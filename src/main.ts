@@ -1,1 +1,4 @@
-console.log('Hello, D&D World!')
+import { TileType } from './types'
+import { createGameGameMap } from './utils'
+
+const globalMap = createGameGameMap(100, 50, TileType.WALL)
