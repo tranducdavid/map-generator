@@ -4,13 +4,15 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "ts-node src/main.ts"
+    "dev": "ts-node src/main.ts",
+    "prettier": "prettier --write 'src/**/*.{ts,tsx,js,jsx}'"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
     "@types/lodash": "^4.14.197",
+    "prettier": "^3.0.3",
     "ts-node": "^10.9.1",
     "typescript": "^5.2.2"
   },
