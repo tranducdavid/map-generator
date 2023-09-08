@@ -7,7 +7,6 @@ export enum TileType {
 }
 
 export enum EdgeType {
-  DEFAULT = 'DEFAULT',
   HIDDEN = 'HIDDEN',
   DOOR = 'DOOR',
   REINFORCED_DOOR = 'REINFORCED_DOOR',
