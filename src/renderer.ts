@@ -6,10 +6,7 @@ const TILE_SIZE = 16
 const BORDER_WIDTH = 2
 
 export const renderGameMapToImage = (map: GameMap): Buffer => {
-  const canvas = createCanvas(
-    map.tiles.length * TILE_SIZE,
-    map.tiles[0].length * TILE_SIZE,
-  )
+  const canvas = createCanvas(map.tiles.length * TILE_SIZE, map.tiles[0].length * TILE_SIZE)
   const ctx = canvas.getContext('2d')
 
   map.tiles.forEach((row, x) => {
@@ -28,21 +25,11 @@ export const renderGameMapToImage = (map: GameMap): Buffer => {
         }
         if (edge.right && edgeColorMapping[edge.right]) {
           ctx.fillStyle = edgeColorMapping[edge.right]
-          ctx.fillRect(
-            (x + 1) * TILE_SIZE - BORDER_WIDTH,
-            y * TILE_SIZE,
-            BORDER_WIDTH,
-            TILE_SIZE,
-          )
+          ctx.fillRect((x + 1) * TILE_SIZE - BORDER_WIDTH, y * TILE_SIZE, BORDER_WIDTH, TILE_SIZE)
         }
         if (edge.bottom && edgeColorMapping[edge.bottom]) {
           ctx.fillStyle = edgeColorMapping[edge.bottom]
-          ctx.fillRect(
-            x * TILE_SIZE,
-            (y + 1) * TILE_SIZE - BORDER_WIDTH,
-            TILE_SIZE,
-            BORDER_WIDTH,
-          )
+          ctx.fillRect(x * TILE_SIZE, (y + 1) * TILE_SIZE - BORDER_WIDTH, TILE_SIZE, BORDER_WIDTH)
         }
         if (edge.left && edgeColorMapping[edge.left]) {
           ctx.fillStyle = edgeColorMapping[edge.left]

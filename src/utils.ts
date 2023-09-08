@@ -60,12 +60,7 @@ export const createRectangleInMap = (
   for (let i = x; i <= xEnd; i++) {
     for (let j = y; j <= yEnd; j++) {
       // Check to ensure the indices are within the bounds of the map
-      if (
-        i >= 0 &&
-        i < newMap.tiles.length &&
-        j >= 0 &&
-        j < newMap.tiles[0].length
-      ) {
+      if (i >= 0 && i < newMap.tiles.length && j >= 0 && j < newMap.tiles[0].length) {
         newMap.tiles[i][j] = tileType
       }
     }

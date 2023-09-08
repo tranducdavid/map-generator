@@ -1,5 +1,3 @@
-import { EdgeType, TileType } from './types'
-import { createGameMap } from './utils'
 import { writeFileSync } from 'fs'
 import { renderGameMapToImage } from './renderer'
 import { generateMaze } from './mapGeneration'

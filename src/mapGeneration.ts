@@ -10,12 +10,7 @@ import { createCorridorRectangle, createGameMap } from './utils'
  * @param step - The step distance to check for neighboring tiles.
  * @returns An array of unvisited neighboring points.
  */
-const getUnvisitedNeighbors = (
-  x: number,
-  y: number,
-  map: GameMap,
-  step: number,
-): Point[] => {
+const getUnvisitedNeighbors = (x: number, y: number, map: GameMap, step: number): Point[] => {
   const neighbors: Point[] = []
   if (y > step - 1 && map.tiles[x][y - step] === TileType.WALL) {
     neighbors.push({ x, y: y - step }) // North
@@ -23,10 +18,7 @@ const getUnvisitedNeighbors = (
   if (x < map.tiles.length - step && map.tiles[x + step][y] === TileType.WALL) {
     neighbors.push({ x: x + step, y }) // East
   }
-  if (
-    y < map.tiles[0].length - step &&
-    map.tiles[x][y + step] === TileType.WALL
-  ) {
+  if (y < map.tiles[0].length - step && map.tiles[x][y + step] === TileType.WALL) {
     neighbors.push({ x, y: y + step }) // South
   }
   if (x > step - 1 && map.tiles[x - step][y] === TileType.WALL) {
@@ -51,15 +43,9 @@ export const generateMaze = (
   wallStep: number,
   corridorStep: number,
 ): GameMap => {
-  const nearestLargerWidth =
-    (Math.floor(width / wallStep) + 1) * wallStep + corridorStep
-  const nearestLargerHeight =
-    (Math.floor(height / wallStep) + 1) * wallStep + corridorStep
-  let map = createGameMap(
-    nearestLargerWidth,
-    nearestLargerHeight,
-    TileType.WALL,
-  )
+  const nearestLargerWidth = (Math.floor(width / wallStep) + 1) * wallStep + corridorStep
+  const nearestLargerHeight = (Math.floor(height / wallStep) + 1) * wallStep + corridorStep
+  let map = createGameMap(nearestLargerWidth, nearestLargerHeight, TileType.WALL)
 
   const stack: Point[] = []
   const startX = 0 + Math.floor(corridorStep / 2)
@@ -75,8 +61,7 @@ export const generateMaze = (
     if (neighbors.length) {
       stack.push(current)
 
-      const randomNeighbor =
-        neighbors[Math.floor(Math.random() * neighbors.length)]
+      const randomNeighbor = neighbors[Math.floor(Math.random() * neighbors.length)]
       const dx = (randomNeighbor.x - current.x) / 2
       const dy = (randomNeighbor.y - current.y) / 2
 
@@ -85,12 +70,7 @@ export const generateMaze = (
         const y = current.y + i * Math.sign(dy)
         map = createCorridorRectangle(map, x, y, corridorStep)
       }
-      map = createCorridorRectangle(
-        map,
-        randomNeighbor.x,
-        randomNeighbor.y,
-        corridorStep,
-      )
+      map = createCorridorRectangle(map, randomNeighbor.x, randomNeighbor.y, corridorStep)
 
       stack.push(randomNeighbor)
     }
