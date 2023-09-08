@@ -9,20 +9,27 @@ import { createCorridorRectangle, createGameMap } from './utils'
  * @param y - The y-coordinate of the tile.
  * @param map - The current game map.
  * @param step - The step distance to check for neighboring tiles.
+ * @param unvisitedType - The type of unvisited tile.
  * @returns An array of unvisited neighboring points.
  */
-const getUnvisitedNeighbors = (x: number, y: number, map: GameMap, step: number): Point[] => {
+const getUnvisitedNeighbors = (
+  x: number,
+  y: number,
+  map: GameMap,
+  step: number,
+  unvisitedTypes: TileType[] = [TileType.WALL],
+): Point[] => {
   const neighbors: Point[] = []
-  if (y > step - 1 && map.tiles[x][y - step] === TileType.WALL) {
+  if (y > step - 1 && unvisitedTypes.includes(map.tiles[x][y - step]!)) {
     neighbors.push({ x, y: y - step }) // North
   }
-  if (x < map.tiles.length - step && map.tiles[x + step][y] === TileType.WALL) {
+  if (x < map.tiles.length - step && unvisitedTypes.includes(map.tiles[x + step][y]!)) {
     neighbors.push({ x: x + step, y }) // East
   }
-  if (y < map.tiles[0].length - step && map.tiles[x][y + step] === TileType.WALL) {
+  if (y < map.tiles[0].length - step && unvisitedTypes.includes(map.tiles[x][y + step]!)) {
     neighbors.push({ x, y: y + step }) // South
   }
-  if (x > step - 1 && map.tiles[x - step][y] === TileType.WALL) {
+  if (x > step - 1 && unvisitedTypes.includes(map.tiles[x - step][y]!)) {
     neighbors.push({ x: x - step, y }) // West
   }
 
@@ -30,73 +37,58 @@ const getUnvisitedNeighbors = (x: number, y: number, map: GameMap, step: number)
 }
 
 /**
- * Randomly grows a room from a starting point, attempting to make it look more natural.
+ * Grows a room from the specified origin point within a game map. The room growth process is limited by the specified maximum size.
+ * It starts by setting the origin point as `ROOM_ORIGIN` and then tries to expand the room by converting adjacent `WALL` tiles to `ROOM` tiles.
+ * The expansion process respects the constraints of the maximum size and has a safeguard for a maximum number of iterations.
  *
- * @param map - The current game map.
- * @param startX - The x-coordinate of the starting point.
- * @param startY - The y-coordinate of the starting point.
- * @param maxRoomSize - The maximum size of the room.
- * @returns A new game map with the room added.
+ * @param map - The game map in which the room is to be grown.
+ * @param x - The x-coordinate of the origin point from where the room should start growing.
+ * @param y - The y-coordinate of the origin point from where the room should start growing.
+ * @param maxSize - The maximum size or number of tiles the room can grow to, including the origin.
+ * @param maxRadius - The maximum radius around the starting point `(x, y)` within which the room can grow.
+ * @returns A new game map with the grown room.
+ *
  */
-const growRoom = (map: GameMap, startX: number, startY: number, maxRoomSize: number): GameMap => {
-  let newMap = _.cloneDeep(map)
-  let roomTiles: Point[] = [{ x: startX, y: startY }]
-  let roomSize = 1
+export const growRoom = (
+  map: GameMap,
+  x: number,
+  y: number,
+  maxSize: number,
+  maxRadius: number,
+): GameMap => {
+  const newMap = _.cloneDeep(map)
+  if (maxSize < 1) {
+    return newMap
+  }
 
-  while (roomSize < maxRoomSize && roomTiles.length) {
-    const currentTile = roomTiles.shift()!
+  const overridableTileTypes = [TileType.WALL, TileType.CORRIDOR]
+  const points: Point[] = [{ x, y }]
+  const iterationsMax = 10000 // max iterations
+  let size = 0
+  let iteration = 0
 
-    const neighbors = [
-      { x: currentTile.x + 1, y: currentTile.y },
-      { x: currentTile.x - 1, y: currentTile.y },
-      { x: currentTile.x, y: currentTile.y + 1 },
-      { x: currentTile.x, y: currentTile.y - 1 },
-    ]
+  while (points.length && size < maxSize && iteration < iterationsMax) {
+    iteration++
 
-    for (const neighbor of neighbors) {
-      // Check if the neighbor is within the map bounds and is a wall.
-      if (
-        neighbor.x >= 0 &&
-        neighbor.x < newMap.tiles.length &&
-        neighbor.y >= 0 &&
-        neighbor.y < newMap.tiles[0].length &&
-        newMap.tiles[neighbor.x][neighbor.y] === TileType.WALL
-      ) {
-        // Randomize the inclusion of neighbors to make the room look more "organic"
-        if (Math.random() > 0.2) {
-          newMap.tiles[neighbor.x][neighbor.y] = TileType.CORRIDOR
-          roomTiles.push(neighbor)
-          roomSize++
-        }
-      }
+    const current = _.sample(points)!
+    _.remove(points, (point) => point === current)
+
+    const isOverridableTile =
+      newMap.tiles[current.x][current.y] === TileType.WALL ||
+      newMap.tiles[current.x][current.y] === TileType.CORRIDOR
+    const distance = Math.sqrt((current.x - x) ** 2 + (current.y - y) ** 2)
+    const isWithinDistance = distance <= maxRadius
+    if (isOverridableTile && isWithinDistance) {
+      newMap.tiles[current.x][current.y] = TileType.ROOM
+      size++
+
+      const neighbors = getUnvisitedNeighbors(current.x, current.y, newMap, 1, overridableTileTypes)
+      neighbors.forEach((neighbor) => points.push(neighbor))
     }
   }
 
-  return newMap
-}
+  newMap.tiles[x][y] = TileType.ROOM_ORIGIN
 
-/**
- * Adds organic rooms to the generated maze.
- *
- * @param map - The current game map.
- * @param numberOfRooms - Number of rooms to add.
- * @returns A new game map with rooms added.
- */
-const addRoomsToMaze = (map: GameMap, numberOfRooms: number): GameMap => {
-  let newMap = _.cloneDeep(map)
-  for (let i = 0; i < numberOfRooms; i++) {
-    // Random starting point
-    const startX = Math.floor(Math.random() * newMap.tiles.length)
-    const startY = Math.floor(Math.random() * newMap.tiles[0].length)
-
-    // Random room size
-    const maxRoomSize = Math.floor(Math.random() * 40) + 10 // e.g. rooms between 10 and 50 tiles
-
-    // If the starting point is a wall, start growing the room.
-    if (newMap.tiles[startX][startY] === TileType.WALL) {
-      newMap = growRoom(newMap, startX, startY, maxRoomSize)
-    }
-  }
   return newMap
 }
 
@@ -148,5 +140,5 @@ export const generateMaze = (
     }
   }
 
-  return addRoomsToMaze(map, 3)
+  return map
 }

@@ -1,5 +1,5 @@
 import _ from 'lodash'
-import { GameMap, TileType } from './types'
+import { GameMap, Point, TileType } from './types'
 
 /**
  * Creates a game map with specified dimensions.
@@ -96,4 +96,26 @@ export const createCorridorRectangle = (
     corridorStep,
     TileType.CORRIDOR,
   )
+}
+
+/**
+ * Retrieves possible intersection points from the given game map based on a specified wall step.
+ *
+ * This function scans the map tiles in intervals defined by `wallStep` to identify possible
+ * locations for intersections. For example, if `wallStep` is 2, it would check every other tile
+ * on the map for possible intersections.
+ *
+ * @param map - The game map to be scanned for possible intersections.
+ * @param wallStep - The interval at which tiles are checked for possible intersections.
+ * @returns An array of points indicating possible intersection locations.
+ */
+export const getPossibleIntersections = (map: GameMap, wallStep: number): Point[] => {
+  const points = []
+  for (let x = 0; x < map.tiles.length - 1; x = x + wallStep) {
+    for (let y = 0; y < map.tiles[0].length - 1; y = y + wallStep) {
+      points.push({ x, y })
+    }
+  }
+
+  return points
 }

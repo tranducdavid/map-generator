@@ -1,7 +1,10 @@
 import { TileType, EdgeType } from './types'
 
 export const tileColorMapping: Record<TileType, string> = {
-  [TileType.CORRIDOR]: '#d3d3d3',
+  [TileType.CORRIDOR]: '#e3e3e3',
+  [TileType.SECRET_CORRIDOR]: '#c3c3c3',
+  [TileType.ROOM]: '#d3d3d3',
+  [TileType.ROOM_ORIGIN]: '#d3d3d3',
   [TileType.WALL]: '#1a1a1a',
   [TileType.TRAP_PITFALL]: '#8b0000',
   [TileType.SPIKES]: '#c79c7f',
