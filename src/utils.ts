@@ -1,7 +1,7 @@
 import _ from 'lodash'
 import { GameMap, TileType } from './types'
 
-export const createGameGameMap = (
+export const createGameMap = (
   width: number,
   height: number,
   defaultTileType: TileType | null = null,

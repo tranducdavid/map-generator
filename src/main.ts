@@ -1,9 +1,9 @@
 import { EdgeType, TileType } from './types'
-import { createGameGameMap } from './utils'
+import { createGameMap } from './utils'
 import { writeFileSync } from 'fs'
 import { renderGameMapToImage } from './renderer'
 
-const globalMap = createGameGameMap(10, 10, TileType.WALL)
+const globalMap = createGameMap(10, 10, TileType.WALL)
 
 globalMap.tiles[1][5] = TileType.CORRIDOR
 globalMap.tiles[2][5] = TileType.WALL
