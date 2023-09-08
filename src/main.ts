@@ -1,8 +1,14 @@
 import { writeFileSync } from 'fs'
 import { renderGameMapToImage } from './renderer'
 import { generateMaze, growRoom } from './mapGeneration'
-import { getPossibleIntersections } from './utils'
+import {
+  findNearestTile,
+  getDistance,
+  getPossibleIntersections,
+  isWithinDistanceFromBorder,
+} from './utils'
 import _ from 'lodash'
+import { TileType } from './types'
 
 // const globalMap = createGameMap(10, 10, TileType.WALL)
 
@@ -32,15 +38,27 @@ const generateMap = () => {
 
   let globalMap = generateMaze(MAP_WIDTH, MAP_HEIGHT, WALL_STEP, CORRIDOR_STEP)
 
-  const possibleIntersections = getPossibleIntersections(globalMap, WALL_STEP)
+  const possibleIntersections = _.shuffle(getPossibleIntersections(globalMap, WALL_STEP))
 
-  possibleIntersections.forEach((intersection) => {
-    const roomSize = Math.round(ROOM_SIZE * _.random(ROOM_SIZE_MIN, ROOM_SIZE_MAX))
+  while (possibleIntersections.length) {
+    const intersection = possibleIntersections.pop()!
 
-    if (Math.random() < ROOM_SPAWN_CHANCE) {
+    const nearestRoomOrigin = findNearestTile(
+      globalMap,
+      intersection.x,
+      intersection.y,
+      TileType.ROOM_ORIGIN,
+    )
+    if (
+      !isWithinDistanceFromBorder(globalMap, intersection, WALL_STEP + CORRIDOR_STEP) &&
+      (nearestRoomOrigin == null ||
+        getDistance({ x: intersection.x, y: intersection.y }, nearestRoomOrigin) >
+          2 * WALL_STEP + CORRIDOR_STEP - 1)
+    ) {
+      const roomSize = Math.round(ROOM_SIZE * _.random(ROOM_SIZE_MIN, ROOM_SIZE_MAX))
       globalMap = growRoom(globalMap, intersection.x, intersection.y, roomSize, ROOM_MAX_RADIUS)
     }
-  })
+  }
 
   const imageBuffer = renderGameMapToImage(globalMap)
   writeFileSync('output.png', imageBuffer)

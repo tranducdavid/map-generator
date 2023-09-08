@@ -1,6 +1,6 @@
 import _ from 'lodash'
 import { GameMap, Point, TileType } from './types'
-import { createCorridorRectangle, createGameMap, getUnvisitedNeighbors } from './utils'
+import { createCorridorRectangle, createGameMap, getDistance, getUnvisitedNeighbors } from './utils'
 
 /**
  * Grows a room from the specified origin point within a game map. The room growth process is limited by the specified maximum size.
@@ -42,8 +42,7 @@ export const growRoom = (
     const isOverridableTile =
       newMap.tiles[current.x][current.y] === TileType.WALL ||
       newMap.tiles[current.x][current.y] === TileType.CORRIDOR
-    const distance = Math.sqrt((current.x - x) ** 2 + (current.y - y) ** 2)
-    const isWithinDistance = distance <= maxRadius
+    const isWithinDistance = getDistance(current, { x, y }) <= maxRadius
     if (isOverridableTile && isWithinDistance) {
       newMap.tiles[current.x][current.y] = TileType.ROOM
       size++

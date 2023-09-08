@@ -153,3 +153,74 @@ export const getUnvisitedNeighbors = (
 
   return neighbors
 }
+
+/**
+ * Calculates the Euclidean distance between two points.
+ *
+ * @param p1 - The first point.
+ * @param p2 - The second point.
+ * @returns The distance between the two provided points.
+ */
+export const getDistance = (p1: Point, p2: Point): number => {
+  const dx = p2.x - p1.x
+  const dy = p2.y - p1.y
+  return Math.sqrt(dx ** 2 + dy ** 2)
+}
+
+/**
+ * Finds the nearest tile of the specified type from a given starting point using Pythagorean distance.
+ *
+ * @param map - The game map to search within.
+ * @param startX - The starting x coordinate.
+ * @param startY - The starting y coordinate.
+ * @param targetType - The type of tile we're searching for.
+ * @param ignoreStartTile - Flag indicating whether to ignore the tile at the starting coordinates. Defaults to true.
+ * @returns The point (x, y) of the nearest tile of the specified type, or null if no such tile is found.
+ */
+export const findNearestTile = (
+  map: GameMap,
+  startX: number,
+  startY: number,
+  targetType: TileType,
+  ignoreStartTile: boolean = true,
+): Point | null => {
+  let nearestPoint: Point | null = null
+  let shortestDistance = Infinity
+
+  for (let x = 0; x < map.tiles.length; x++) {
+    for (let y = 0; y < map.tiles[x].length; y++) {
+      if (ignoreStartTile && x === startX && y === startY) {
+        continue
+      }
+      if (map.tiles[x][y] === targetType) {
+        const distance = getDistance({ x: startX, y: startY }, { x, y })
+        if (distance < shortestDistance) {
+          shortestDistance = distance
+          nearestPoint = { x, y }
+        }
+      }
+    }
+  }
+
+  return nearestPoint
+}
+
+/**
+ * Checks if a point is within a specified distance from the border of the map.
+ *
+ * @param map - The game map to check within.
+ * @param point - The point to check.
+ * @param distance - The distance from the border.
+ * @returns A boolean indicating whether the point is within the specified distance from the map's border.
+ */
+export const isWithinDistanceFromBorder = (
+  map: GameMap,
+  point: Point,
+  distance: number,
+): boolean => {
+  const { x, y } = point
+  const maxX = map.tiles.length - 1
+  const maxY = map.tiles[0].length - 1
+
+  return x <= distance || y <= distance || x >= maxX - distance || y >= maxY - distance
+}
