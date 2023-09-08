@@ -119,3 +119,37 @@ export const getPossibleIntersections = (map: GameMap, wallStep: number): Point[
 
   return points
 }
+
+/**
+ * Fetches unvisited neighboring tiles for a given point.
+ *
+ * @param x - The x-coordinate of the tile.
+ * @param y - The y-coordinate of the tile.
+ * @param map - The current game map.
+ * @param step - The step distance to check for neighboring tiles.
+ * @param unvisitedType - The type of unvisited tile.
+ * @returns An array of unvisited neighboring points.
+ */
+export const getUnvisitedNeighbors = (
+  x: number,
+  y: number,
+  map: GameMap,
+  step: number,
+  unvisitedTypes: TileType[] = [TileType.WALL],
+): Point[] => {
+  const neighbors: Point[] = []
+  if (y > step - 1 && unvisitedTypes.includes(map.tiles[x][y - step]!)) {
+    neighbors.push({ x, y: y - step }) // North
+  }
+  if (x < map.tiles.length - step && unvisitedTypes.includes(map.tiles[x + step][y]!)) {
+    neighbors.push({ x: x + step, y }) // East
+  }
+  if (y < map.tiles[0].length - step && unvisitedTypes.includes(map.tiles[x][y + step]!)) {
+    neighbors.push({ x, y: y + step }) // South
+  }
+  if (x > step - 1 && unvisitedTypes.includes(map.tiles[x - step][y]!)) {
+    neighbors.push({ x: x - step, y }) // West
+  }
+
+  return neighbors
+}
