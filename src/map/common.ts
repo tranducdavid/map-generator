@@ -57,7 +57,7 @@ export const createRectangleInMap = (
 
   for (let i = x; i <= xEnd; i++) {
     for (let j = y; j <= yEnd; j++) {
-      if (i >= 0 && i < newMap.tiles.length && j >= 0 && j < newMap.tiles[0].length) {
+      if (isWithinBounds(i, j, newMap)) {
         if (replaceType === undefined || newMap.tiles[i][j] === replaceType) {
           newMap.tiles[i][j] = tileType
         }
@@ -80,7 +80,7 @@ export const createRectangleInMap = (
  * @returns An array of points indicating possible intersection locations.
  */
 export const getPossibleIntersections = (map: GameMap, wallStep: number): Point[] => {
-  const points = []
+  const points: Point[] = []
   for (let x = 0; x < map.tiles.length - 1; x = x + wallStep) {
     for (let y = 0; y < map.tiles[0].length - 1; y = y + wallStep) {
       points.push({ x, y })
@@ -227,4 +227,16 @@ export const getNeighbors = (x: number, y: number, map: GameMap): Point[] => {
   }
 
   return neighbors
+}
+
+/**
+ * Checks if a given point (x, y) is within the bounds of the game map.
+ *
+ * @param x - The x-coordinate of the point.
+ * @param y - The y-coordinate of the point.
+ * @param map - The game map to check against.
+ * @returns A boolean indicating whether the point is within the map's bounds.
+ */
+export const isWithinBounds = (x: number, y: number, map: GameMap): boolean => {
+  return x >= 0 && y >= 0 && x < map.tiles.length && y < map.tiles[0].length
 }

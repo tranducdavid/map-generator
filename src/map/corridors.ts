@@ -1,13 +1,14 @@
-import _, { random } from 'lodash'
+import _ from 'lodash'
 import { GameMap, Point, TileType } from '../types'
 import { createRectangleInMap, getNeighbors } from './common'
+import { random } from '../utils/random'
 
 /**
  * Constructs a corridor between two points on the game map.
  *
  * This function connects two points by constructing a straight corridor. The corridor is
  * created in a Manhattan style, meaning it will first move horizontally and then
- * vertically, or vice versa, depending on the relative positions of the two points.
+ * vertically, or vice versa, depending on a chance.
  *
  * @param map - The game map on which the corridor is to be constructed.
  * @param start - The starting point of the corridor.
@@ -35,7 +36,6 @@ export const constructCorridor = (
   return newMap
 }
 
-// Helper function to construct a horizontal segment of the corridor
 const constructHorizontal = (
   map: GameMap,
   start: Point,
@@ -61,7 +61,6 @@ const constructHorizontal = (
   return newMap
 }
 
-// Helper function to construct a vertical segment of the corridor
 const constructVertical = (
   map: GameMap,
   start: Point,
@@ -102,9 +101,9 @@ const constructVertical = (
  */
 export const removeIsolatedCorridors = (map: GameMap): GameMap => {
   const newMap = _.cloneDeep(map)
-  const visited: boolean[][] = Array(newMap.tiles.length)
-    .fill(null)
-    .map(() => Array(newMap.tiles[0].length).fill(false))
+  const visited: boolean[][] = Array.from({ length: newMap.tiles.length }, () =>
+    Array(newMap.tiles[0].length).fill(false),
+  )
 
   // Flood fill starting from rooms or room origins
   const floodFill = (x: number, y: number) => {

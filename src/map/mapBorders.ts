@@ -8,7 +8,7 @@ import { GameMap, TileType } from '../types'
  * @param corridorStep - The size variable which determines the width and height of the corridor rectangle.
  * @returns A new game map without the outer borders.
  */
-export const removeMapBorders = (map: GameMap, corridorStep: number): GameMap => {
+export const shrinkMap = (map: GameMap, corridorStep: number): GameMap => {
   const newMap = _.cloneDeep(map)
   newMap.tiles = newMap.tiles
     .slice(corridorStep, -corridorStep)

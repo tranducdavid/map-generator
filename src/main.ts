@@ -13,7 +13,7 @@ import { random, shuffle } from './utils/random'
 import { generateMaze } from './map/maze'
 import { removeIsolatedCorridors } from './map/corridors'
 import { growRoom } from './map/rooms'
-import { fillMapBorders, removeMapBorders } from './map/mapBorders'
+import { fillMapBorders, shrinkMap } from './map/mapBorders'
 
 // const globalMap = createGameMap(10, 10, TileType.WALL)
 
@@ -37,8 +37,8 @@ const generateMap = () => {
 
   const ROOM_MAX_RADIUS = WALL_STEP - CORRIDOR_STEP - 1
   const ROOM_SIZE = Math.PI * ROOM_MAX_RADIUS ** 2
-  const ROOM_SIZE_MIN = 0.75
-  const ROOM_SIZE_MAX = 0.5
+  const ROOM_SIZE_MIN = 0.5
+  const ROOM_SIZE_MAX = 0.75
 
   let globalMap = generateMaze(MAP_WIDTH, MAP_HEIGHT, WALL_STEP, CORRIDOR_STEP)
 
@@ -68,7 +68,7 @@ const generateMap = () => {
   globalMap = removeIsolatedCorridors(globalMap)
   const clusters = findIsolatedClusters(globalMap)
   globalMap = connectClusters(globalMap, clusters, WALL_STEP, CORRIDOR_STEP)
-  globalMap = removeMapBorders(globalMap, CORRIDOR_STEP)
+  globalMap = shrinkMap(globalMap, CORRIDOR_STEP)
 
   const imageBuffer = renderGameMapToImage(globalMap)
   writeFileSync('output.png', imageBuffer)
