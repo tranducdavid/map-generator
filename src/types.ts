@@ -13,8 +13,8 @@ export const ALL_TILE_TYPES: TileType[] = Object.values(TileType) as TileType[]
 
 export enum EdgeType {
   ROOM_WALL = 'ROOM_WALL',
-  HIDDEN = 'HIDDEN',
   DOOR = 'DOOR',
+  HIDDEN_DOOR = 'HIDDEN_DOOR',
   REINFORCED_DOOR = 'REINFORCED_DOOR',
   WINDOW = 'WINDOW',
   EMBRASURE = 'EMBRASURE',
@@ -39,7 +39,7 @@ export type EdgeConfig = {
 
 export type GameMap = {
   tiles: (TileType | null)[][]
-  edges: (Edge | null)[][]
+  edges: Edge[][]
 }
 
 export type Point = {

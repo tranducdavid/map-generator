@@ -18,7 +18,7 @@ export const createGameMap = (
   defaultTileType: TileType | null = null,
 ): GameMap => {
   const tiles = _.times(width, () => _.times(height, () => defaultTileType))
-  const edges = _.times(width, () => _.times(height, () => null))
+  const edges = _.times(width, () => _.times(height, () => ({})))
 
   return {
     tiles,
@@ -304,4 +304,39 @@ export const allSurroundingTilesOfTypes = (
   }
 
   return true
+}
+
+/**
+ * Retrieves all valid points within a rectangle defined on the game map.
+ *
+ * Given a top-left corner `(x, y)` and dimensions `(width, height)`,
+ * this function returns an array of `Point` objects for all the tiles
+ * within the rectangle that exist on the given game map.
+ *
+ * @param {GameMap} map - The game map to retrieve points from.
+ * @param {number} x - The x-coordinate of the top-left corner of the rectangle.
+ * @param {number} y - The y-coordinate of the top-left corner of the rectangle.
+ * @param {number} width - The width of the rectangle.
+ * @param {number} height - The height of the rectangle.
+ * @returns {Point[]} An array of points within the defined rectangle.
+ *
+ * @example
+ * const rectanglePoints = getRectanglePoints(5, 5, 3, 3, gameMap);
+ */
+export const getRectanglePoints = (
+  map: GameMap,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+): Point[] => {
+  const points: Point[] = []
+
+  for (let i = x; i < x + width && i < map.tiles.length; i++) {
+    for (let j = y; j < y + height && j < map.tiles[0].length; j++) {
+      points.push({ x: i, y: j })
+    }
+  }
+
+  return points
 }

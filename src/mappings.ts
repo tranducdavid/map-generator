@@ -13,8 +13,8 @@ export const tileColorMapping: Record<TileType, string> = {
 
 export const edgeColorMapping: Record<EdgeType, string> = {
   [EdgeType.ROOM_WALL]: tileColorMapping[TileType.WALL],
-  [EdgeType.HIDDEN]: '#a561c2',
   [EdgeType.DOOR]: '#986a57',
+  [EdgeType.HIDDEN_DOOR]: '#a561c2',
   [EdgeType.REINFORCED_DOOR]: '#986a57',
   [EdgeType.WINDOW]: '#88c8f7',
   [EdgeType.EMBRASURE]: '#746bf5',

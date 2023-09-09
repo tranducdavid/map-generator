@@ -110,19 +110,14 @@ export const growRoom = (
         newMap.tiles[neighbor.x][neighbor.y] !== TileType.ROOM &&
         newMap.tiles[neighbor.x][neighbor.y] !== TileType.ROOM_ORIGIN
       ) {
-        // Ensure the edge object is initialized
-        if (!newMap.edges[rx][ry]) {
-          newMap.edges[rx][ry] = {}
-        }
-
         if (neighbor.x > rx) {
-          newMap.edges[rx][ry]!.right = EdgeType.ROOM_WALL
+          newMap.edges[rx][ry].right = EdgeType.ROOM_WALL
         } else if (neighbor.x < rx) {
-          newMap.edges[rx][ry]!.left = EdgeType.ROOM_WALL
+          newMap.edges[rx][ry].left = EdgeType.ROOM_WALL
         } else if (neighbor.y > ry) {
-          newMap.edges[rx][ry]!.bottom = EdgeType.ROOM_WALL
+          newMap.edges[rx][ry].bottom = EdgeType.ROOM_WALL
         } else if (neighbor.y < ry) {
-          newMap.edges[rx][ry]!.top = EdgeType.ROOM_WALL
+          newMap.edges[rx][ry].top = EdgeType.ROOM_WALL
         }
       }
     })

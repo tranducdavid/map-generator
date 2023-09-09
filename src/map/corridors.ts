@@ -1,7 +1,14 @@
 import _, { map } from 'lodash'
-import { ALL_TILE_TYPES, GameMap, Point, TileType } from '../types'
-import { createRectangleInMap, getNeighbors, getTiles, getUnvisitedNeighbors } from './common'
+import { ALL_TILE_TYPES, EdgeType, GameMap, Point, TileType } from '../types'
+import {
+  createRectangleInMap,
+  getNeighbors,
+  getRectanglePoints,
+  getTiles,
+  getUnvisitedNeighbors,
+} from './common'
 import { random } from '../utils/random'
+import { createEdgesBetweenTiles } from './edges'
 
 /**
  * Constructs a corridor between two points on the game map.
@@ -204,8 +211,8 @@ export const createSecretCorridors = (
     const deltaY = neighbor.y - centralPoint.y
 
     // Determine corridor dimensions based on the direction
-    const corridorWidth = Math.abs(deltaX) + (Math.abs(deltaX) > 0 ? 0 : corridorStep)
-    const corridorHeight = Math.abs(deltaY) + (Math.abs(deltaY) > 0 ? 0 : corridorStep)
+    const corridorWidth = Math.abs(deltaX) + (Math.abs(deltaX) === 0 ? corridorStep : 0)
+    const corridorHeight = Math.abs(deltaY) + (Math.abs(deltaY) === 0 ? corridorStep : 0)
 
     // Determine starting point of the corridor rectangle
     const startX = centralPoint.x + (deltaX >= 0 ? 0 : -corridorWidth + 1)
@@ -220,6 +227,15 @@ export const createSecretCorridors = (
       corridorHeight,
       TileType.SECRET_CORRIDOR,
       TileType.WALL,
+    )
+
+    const roomTiles = getRectanglePoints(newMap, startX, startY, corridorWidth, corridorHeight)
+    newMap = createEdgesBetweenTiles(
+      newMap,
+      roomTiles,
+      [TileType.SECRET_CORRIDOR],
+      [TileType.CORRIDOR, TileType.ROOM, TileType.ROOM_ORIGIN],
+      EdgeType.HIDDEN_DOOR,
     )
   }
 
