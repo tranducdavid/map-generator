@@ -9,7 +9,7 @@ export enum TileType {
   LAVA = 'lava',
 }
 
-export const ALL_TILE_TYPES: TileType[] = Object.values(TileType) as TileType[]
+export const ALL_TILE_TYPES: TileType[] = Object.values(TileType)
 
 export enum EdgeType {
   ROOM_WALL = 'roomWall',
@@ -26,6 +26,10 @@ export enum Direction {
   BOTTOM = 'bottom',
   LEFT = 'left',
 }
+
+export const ALL_DIRECTIONS_TYPES: Direction[] = Object.values(Direction)
+export const VERTICAL_DIRECTION_TYPES: Direction[] = [Direction.TOP, Direction.BOTTOM]
+export const HORIZONTAL_DIRECTION_TYPES: Direction[] = [Direction.LEFT, Direction.RIGHT]
 
 export type Edge = {
   [Direction.TOP]?: EdgeType

@@ -1,5 +1,14 @@
 import _, { map } from 'lodash'
-import { ALL_TILE_TYPES, EdgeType, GameMap, Point, TileType } from '../types'
+import {
+  ALL_TILE_TYPES,
+  Direction,
+  EdgeType,
+  GameMap,
+  HORIZONTAL_DIRECTION_TYPES,
+  Point,
+  TileType,
+  VERTICAL_DIRECTION_TYPES,
+} from '../types'
 import {
   createRectangleInMap,
   getNeighbors,
@@ -187,9 +196,12 @@ export const createSecretCorridors = (
     const deltaX = neighbor.x - centralPoint.x
     const deltaY = neighbor.y - centralPoint.y
 
+    const isHorizontal = deltaY === 0
+    const isVertical = !isHorizontal
+
     // Determine corridor dimensions based on the direction
-    const corridorWidth = Math.abs(deltaX) + (Math.abs(deltaX) === 0 ? corridorStep : 0)
-    const corridorHeight = Math.abs(deltaY) + (Math.abs(deltaY) === 0 ? corridorStep : 0)
+    const corridorWidth = Math.abs(deltaX) + (isVertical ? corridorStep : 0)
+    const corridorHeight = Math.abs(deltaY) + (isHorizontal ? corridorStep : 0)
 
     // Determine starting point of the corridor rectangle
     const startX = centralPoint.x + (deltaX >= 0 ? 0 : -corridorWidth + 1)
@@ -213,6 +225,7 @@ export const createSecretCorridors = (
       [TileType.SECRET_CORRIDOR],
       [TileType.CORRIDOR, TileType.ROOM, TileType.ROOM_ORIGIN],
       EdgeType.HIDDEN_DOOR,
+      isHorizontal ? HORIZONTAL_DIRECTION_TYPES : VERTICAL_DIRECTION_TYPES,
     )
   }
 
