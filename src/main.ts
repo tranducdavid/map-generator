@@ -14,6 +14,7 @@ import {
   secretEdgeColorMapping,
   secretTileColorMapping,
 } from './mappings'
+import { placeTraps } from './map/traps'
 
 // const globalMap = createGameMap(10, 10, TileType.WALL)
 
@@ -60,6 +61,9 @@ const generateMap = () => {
 
   // Create secret corridors
   globalMap = profile(generateSecretCorridorsFromRoomOrigins)(globalMap, WALL_STEP)
+
+  // Place traps
+  globalMap = profile(placeTraps)(globalMap, 10)
 
   // Shrink map
   globalMap = profile(shrinkMap)(globalMap, CORRIDOR_STEP)

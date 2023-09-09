@@ -23,6 +23,7 @@ export const secretEdgeColorMapping: Record<EdgeType, string> = {
 export const publicTileColorMapping: Record<TileType, string> = {
   ...secretTileColorMapping,
   [TileType.SECRET_CORRIDOR]: secretTileColorMapping[TileType.WALL],
+  [TileType.TRAP_PITFALL]: secretTileColorMapping[TileType.CORRIDOR],
 }
 
 export const publicEdgeColorMapping: Record<EdgeType, string> = {
