@@ -27,6 +27,8 @@ yarn-debug.log*
 yarn-error.log*
 
 output.png
+outputSecret.png
+outputPublic.png
 output.json
 consolidate.sh
 consolidateTypes.sh

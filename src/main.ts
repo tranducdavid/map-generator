@@ -8,6 +8,12 @@ import { generateSecretCorridorsFromRoomOrigins, removeIsolatedCorridors } from 
 import { generateRoomsAtIntersections } from './map/rooms'
 import { fillMapBorders, shrinkMap } from './map/mapBorders'
 import { profile } from './utils/profiling'
+import {
+  publicEdgeColorMapping,
+  publicTileColorMapping,
+  secretEdgeColorMapping,
+  secretTileColorMapping,
+} from './mappings'
 
 // const globalMap = createGameMap(10, 10, TileType.WALL)
 
@@ -59,8 +65,14 @@ const generateMap = () => {
   globalMap = profile(shrinkMap)(globalMap, CORRIDOR_STEP)
 
   // Export
-  const imageBuffer = profile(renderGameMapToImage)(globalMap)
-  writeFileSync('output.png', imageBuffer)
+  writeFileSync(
+    'outputSecret.png',
+    profile(renderGameMapToImage)(globalMap, secretTileColorMapping, secretEdgeColorMapping),
+  )
+  writeFileSync(
+    'outputPublic.png',
+    profile(renderGameMapToImage)(globalMap, publicTileColorMapping, publicEdgeColorMapping),
+  )
   writeFileSync('output.json', JSON.stringify(globalMap))
 }
 

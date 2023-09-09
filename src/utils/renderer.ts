@@ -1,11 +1,14 @@
 import { createCanvas } from 'canvas'
-import { GameMap } from '../types'
-import { tileColorMapping, edgeColorMapping } from '../mappings'
+import { EdgeType, GameMap, TileType } from '../types'
 
 const TILE_SIZE = 16
 const BORDER_WIDTH = 2
 
-export const renderGameMapToImage = (map: GameMap): Buffer => {
+export const renderGameMapToImage = (
+  map: GameMap,
+  tileColorMapping: Record<TileType, string>,
+  edgeColorMapping: Record<EdgeType, string>,
+): Buffer => {
   const canvas = createCanvas(map.tiles.length * TILE_SIZE, map.tiles[0].length * TILE_SIZE)
   const ctx = canvas.getContext('2d')
 
