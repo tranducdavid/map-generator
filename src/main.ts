@@ -1,20 +1,11 @@
 import { writeFileSync } from 'fs'
 import { renderGameMapToImage } from './utils/renderer'
 import { connectClusters, findIsolatedClusters } from './map/clusters'
-import {
-  findNearestTile,
-  getDistance,
-  getPossibleIntersections,
-  getTiles,
-  getUnvisitedNeighbors,
-  isWithinDistanceFromBorder,
-} from './map/common'
 import _ from 'lodash'
-import { ALL_TILE_TYPES, TileType } from './types'
-import { random, shuffle } from './utils/random'
+import { TileType } from './types'
 import { generateMaze } from './map/maze'
-import { createSecretCorridors, removeIsolatedCorridors } from './map/corridors'
-import { growRoom } from './map/rooms'
+import { generateSecretCorridorsFromRoomOrigins, removeIsolatedCorridors } from './map/corridors'
+import { generateRoomsAtIntersections } from './map/rooms'
 import { fillMapBorders, shrinkMap } from './map/mapBorders'
 
 // const globalMap = createGameMap(10, 10, TileType.WALL)
@@ -47,26 +38,8 @@ const generateMap = () => {
   let globalMap = generateMaze(MAP_WIDTH, MAP_HEIGHT, WALL_STEP, CORRIDOR_STEP)
 
   // Generate rooms
-  const possibleIntersections = shuffle(getPossibleIntersections(globalMap, WALL_STEP))
-  while (possibleIntersections.length) {
-    const intersection = possibleIntersections.pop()!
-
-    const nearestRoomOrigin = findNearestTile(
-      globalMap,
-      intersection.x,
-      intersection.y,
-      TileType.ROOM_ORIGIN,
-    )
-    if (
-      !isWithinDistanceFromBorder(globalMap, intersection, WALL_STEP + CORRIDOR_STEP) &&
-      (nearestRoomOrigin == null ||
-        getDistance({ x: intersection.x, y: intersection.y }, nearestRoomOrigin) >
-          2 * WALL_STEP + CORRIDOR_STEP - 1)
-    ) {
-      const roomSize = Math.round(ROOM_SIZE * random(ROOM_SIZE_MIN, ROOM_SIZE_MAX))
-      globalMap = growRoom(globalMap, intersection.x, intersection.y, roomSize, ROOM_MAX_RADIUS)
-    }
-  }
+  // prettier-ignore
+  globalMap = generateRoomsAtIntersections( globalMap, WALL_STEP, CORRIDOR_STEP, ROOM_MAX_RADIUS, ROOM_SIZE, ROOM_SIZE_MIN, ROOM_SIZE_MAX)
 
   // Remove corridors from map borders
   globalMap = fillMapBorders(globalMap, CORRIDOR_STEP, TileType.WALL)
@@ -79,15 +52,7 @@ const generateMap = () => {
   globalMap = connectClusters(globalMap, clusters, WALL_STEP, CORRIDOR_STEP)
 
   // Create secret corridors
-  const roomOrigins = getTiles(globalMap, TileType.ROOM_ORIGIN)
-  roomOrigins.forEach(({ x, y }) => {
-    globalMap = createSecretCorridors(
-      globalMap,
-      { x, y },
-      getUnvisitedNeighbors(x, y, globalMap, WALL_STEP, ALL_TILE_TYPES),
-      1,
-    )
-  })
+  globalMap = generateSecretCorridorsFromRoomOrigins(globalMap, WALL_STEP)
 
   // Shrink map
   globalMap = shrinkMap(globalMap, CORRIDOR_STEP)

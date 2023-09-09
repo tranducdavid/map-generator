@@ -1,6 +1,6 @@
-import _ from 'lodash'
-import { GameMap, Point, TileType } from '../types'
-import { createRectangleInMap, getNeighbors } from './common'
+import _, { map } from 'lodash'
+import { ALL_TILE_TYPES, GameMap, Point, TileType } from '../types'
+import { createRectangleInMap, getNeighbors, getTiles, getUnvisitedNeighbors } from './common'
 import { random } from '../utils/random'
 
 /**
@@ -222,6 +222,31 @@ export const createSecretCorridors = (
       TileType.WALL,
     )
   }
+
+  return newMap
+}
+
+/**
+ * Generate secret corridors from room origins.
+ *
+ * @param globalMap - The current game map.
+ * @param wallStep - Indicating the wall's step size.
+ *
+ * @returns The game map.
+ */
+export const generateSecretCorridorsFromRoomOrigins = (map: GameMap, wallStep: number): GameMap => {
+  let newMap = _.cloneDeep(map)
+
+  const roomOrigins = getTiles(newMap, TileType.ROOM_ORIGIN)
+
+  roomOrigins.forEach(({ x, y }) => {
+    newMap = createSecretCorridors(
+      newMap,
+      { x, y },
+      getUnvisitedNeighbors(x, y, newMap, wallStep, ALL_TILE_TYPES),
+      1,
+    )
+  })
 
   return newMap
 }

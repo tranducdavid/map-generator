@@ -1,7 +1,13 @@
 import _ from 'lodash'
 import { GameMap, Point, TileType } from '../types'
-import { getDistance, getUnvisitedNeighbors } from './common'
-import { sample } from '../utils/random'
+import {
+  findNearestTile,
+  getDistance,
+  getPossibleIntersections,
+  getUnvisitedNeighbors,
+  isWithinDistanceFromBorder,
+} from './common'
+import { random, sample, shuffle } from '../utils/random'
 
 /**
  * Grows a room from the specified origin point within a game map. The room growth process is limited by the specified maximum size.
@@ -54,6 +60,54 @@ export const growRoom = (
   }
 
   newMap.tiles[x][y] = TileType.ROOM_ORIGIN
+
+  return newMap
+}
+
+/**
+ * Generate rooms based on potential intersections.
+ *
+ * @param globalMap - The current game map.
+ * @param wallStep - Indicating the wall's step size.
+ * @param corridorStep - Indicating the corridor's step size.
+ * @param roomMaxRadius - Indicating the maximum room radius.
+ * @param roomSize - Indicating the room's size.
+ * @param roomSizeMin - Indicating the minimum size multiplier for the room.
+ * @param roomSizeMax - Indicating the maximum size multiplier for the room.
+ *
+ * @returns The game map.
+ */
+export const generateRoomsAtIntersections = (
+  map: GameMap,
+  wallStep: number,
+  corridorStep: number,
+  roomMaxRadius: number,
+  roomSize: number,
+  roomSizeMin: number,
+  roomSizeMax: number,
+): GameMap => {
+  let newMap = _.cloneDeep(map)
+  const possibleIntersections = shuffle(getPossibleIntersections(newMap, wallStep))
+
+  while (possibleIntersections.length) {
+    const intersection = possibleIntersections.pop()!
+    const nearestRoomOrigin = findNearestTile(
+      newMap,
+      intersection.x,
+      intersection.y,
+      TileType.ROOM_ORIGIN,
+    )
+
+    if (
+      !isWithinDistanceFromBorder(newMap, intersection, wallStep + corridorStep) &&
+      (nearestRoomOrigin == null ||
+        getDistance({ x: intersection.x, y: intersection.y }, nearestRoomOrigin) >
+          2 * wallStep + corridorStep - 1)
+    ) {
+      const currentRoomSize = Math.round(roomSize * random(roomSizeMin, roomSizeMax))
+      newMap = growRoom(newMap, intersection.x, intersection.y, currentRoomSize, roomMaxRadius)
+    }
+  }
 
   return newMap
 }
