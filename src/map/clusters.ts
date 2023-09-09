@@ -118,33 +118,20 @@ export const connectClusters = (
   wallStep: number,
   corridorStep: number,
 ): GameMap => {
-  let newMap = _.cloneDeep(map)
-  const newClusters = _.cloneDeep(clusters)
-
-  while (newClusters.length > 1) {
+  while (clusters.length > 1) {
     let nearestClusterIndex = -1
     let currentClusterIndex = 0
     let minDistance = Infinity
     let start: Point = { x: 0, y: 0 }
     let end: Point = { x: 0, y: 0 }
 
-    const currentCluster = newClusters[currentClusterIndex]
+    const currentCluster = clusters[currentClusterIndex]
 
     // Find the nearest cluster
-    for (let i = 0; i < newClusters.length; i++) {
+    for (let i = 0; i < clusters.length; i++) {
       if (i !== currentClusterIndex) {
-        const possibleStart = getIntersectionsInCluster(
-          newMap,
-          currentCluster,
-          wallStep,
-          corridorStep,
-        )
-        const possibleEnd = getIntersectionsInCluster(
-          newMap,
-          newClusters[i],
-          wallStep,
-          corridorStep,
-        )
+        const possibleStart = getIntersectionsInCluster(map, currentCluster, wallStep, corridorStep)
+        const possibleEnd = getIntersectionsInCluster(map, clusters[i], wallStep, corridorStep)
 
         for (const s of possibleStart) {
           for (const e of possibleEnd) {
@@ -161,10 +148,10 @@ export const connectClusters = (
     }
 
     // Connect the current cluster to the nearest cluster
-    newMap = constructCorridor(newMap, start, end, corridorStep)
+    map = constructCorridor(map, start, end, corridorStep)
 
     // Remove the current cluster from the list
-    newClusters.splice(currentClusterIndex, 1)
+    clusters.splice(currentClusterIndex, 1)
 
     // If the nearest cluster is after the current in the list, decrement its index due to the splice
     if (nearestClusterIndex > currentClusterIndex) {
@@ -175,5 +162,5 @@ export const connectClusters = (
     currentClusterIndex = nearestClusterIndex
   }
 
-  return newMap
+  return map
 }

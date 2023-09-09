@@ -30,29 +30,27 @@ export const generateMaze = (
   map = createCorridorRectangle(map, startX, startY, corridorStep)
   stack.push({ x: startX, y: startY })
 
-  profile(() => {
-    while (stack.length > 0) {
-      const current = stack.pop()!
-      const neighbors = getUnvisitedNeighbors(current.x, current.y, map, wallStep)
+  while (stack.length > 0) {
+    const current = stack.pop()!
+    const neighbors = getUnvisitedNeighbors(current.x, current.y, map, wallStep)
 
-      if (neighbors.length) {
-        stack.push(current)
+    if (neighbors.length) {
+      stack.push(current)
 
-        const randomNeighbor = neighbors[Math.floor(random() * neighbors.length)]
-        const dx = (randomNeighbor.x - current.x) / 2
-        const dy = (randomNeighbor.y - current.y) / 2
+      const randomNeighbor = neighbors[Math.floor(random() * neighbors.length)]
+      const dx = (randomNeighbor.x - current.x) / 2
+      const dy = (randomNeighbor.y - current.y) / 2
 
-        for (let i = 1; i < wallStep; i++) {
-          const x = current.x + i * Math.sign(dx)
-          const y = current.y + i * Math.sign(dy)
-          map = createCorridorRectangle(map, x, y, corridorStep)
-        }
-        map = createCorridorRectangle(map, randomNeighbor.x, randomNeighbor.y, corridorStep)
-
-        stack.push(randomNeighbor)
+      for (let i = 1; i < wallStep; i++) {
+        const x = current.x + i * Math.sign(dx)
+        const y = current.y + i * Math.sign(dy)
+        map = createCorridorRectangle(map, x, y, corridorStep)
       }
+      map = createCorridorRectangle(map, randomNeighbor.x, randomNeighbor.y, corridorStep)
+
+      stack.push(randomNeighbor)
     }
-  })()
+  }
 
   return map
 }

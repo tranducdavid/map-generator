@@ -40,9 +40,8 @@ export const growRoom = (
   maxSize: number,
   maxRadius: number,
 ): GameMap => {
-  const newMap = _.cloneDeep(map)
   if (maxSize < 1) {
-    return newMap
+    return map
   }
 
   const origin: Point = { x, y }
@@ -62,15 +61,15 @@ export const growRoom = (
     const current = sample(points)!
     _.remove(points, (point) => point === current)
 
-    const isOverridableTile = overridableTileTypes.includes(newMap.tiles[current.x][current.y]!)
+    const isOverridableTile = overridableTileTypes.includes(map.tiles[current.x][current.y]!)
     const isWithinDistance = getDistance(current, { x, y }) <= maxRadius
 
     if (isOverridableTile && isWithinDistance) {
-      newMap.tiles[current.x][current.y] = TileType.ROOM
+      map.tiles[current.x][current.y] = TileType.ROOM
       roomTiles.push(current)
       size++
 
-      const neighbors = getUnvisitedNeighbors(current.x, current.y, newMap, 1, overridableTileTypes)
+      const neighbors = getUnvisitedNeighbors(current.x, current.y, map, 1, overridableTileTypes)
       neighbors.forEach((neighbor) => points.push(neighbor))
     }
   }
@@ -78,23 +77,23 @@ export const growRoom = (
   // Find corridors enclosed by rooms and walls and turn them to room tiles
   // Find walls enclosed by rooms and turn them to room tiles
   roomTiles.forEach((tile) => {
-    getNeighbors(tile.x, tile.y, newMap).forEach((neighbor) => {
+    getNeighbors(tile.x, tile.y, map).forEach((neighbor) => {
       if (
-        (newMap.tiles[neighbor.x][neighbor.y] === TileType.CORRIDOR &&
-          allSurroundingTilesOfTypes(newMap, neighbor.x, neighbor.y, [
+        (map.tiles[neighbor.x][neighbor.y] === TileType.CORRIDOR &&
+          allSurroundingTilesOfTypes(map, neighbor.x, neighbor.y, [
             TileType.ROOM,
             TileType.WALL,
           ])) ||
-        (newMap.tiles[neighbor.x][neighbor.y] === TileType.WALL &&
-          allSurroundingTilesOfTypes(newMap, neighbor.x, neighbor.y, [TileType.ROOM]))
+        (map.tiles[neighbor.x][neighbor.y] === TileType.WALL &&
+          allSurroundingTilesOfTypes(map, neighbor.x, neighbor.y, [TileType.ROOM]))
       ) {
-        newMap.tiles[neighbor.x][neighbor.y] = TileType.ROOM
+        map.tiles[neighbor.x][neighbor.y] = TileType.ROOM
       }
     })
   })
 
   // Set room origin
-  newMap.tiles[x][y] = TileType.ROOM_ORIGIN
+  map.tiles[x][y] = TileType.ROOM_ORIGIN
 
   // Set edges of the room to walls
   roomTiles.forEach(({ x: rx, y: ry }) => {
@@ -106,18 +105,18 @@ export const growRoom = (
       { x: rx, y: ry - 1 },
     ].forEach((neighbor) => {
       if (
-        newMap.tiles[neighbor.x] &&
-        newMap.tiles[neighbor.x][neighbor.y] !== TileType.ROOM &&
-        newMap.tiles[neighbor.x][neighbor.y] !== TileType.ROOM_ORIGIN
+        map.tiles[neighbor.x] &&
+        map.tiles[neighbor.x][neighbor.y] !== TileType.ROOM &&
+        map.tiles[neighbor.x][neighbor.y] !== TileType.ROOM_ORIGIN
       ) {
         if (neighbor.x > rx) {
-          newMap.edges[rx][ry].right = EdgeType.ROOM_WALL
+          map.edges[rx][ry].right = EdgeType.ROOM_WALL
         } else if (neighbor.x < rx) {
-          newMap.edges[rx][ry].left = EdgeType.ROOM_WALL
+          map.edges[rx][ry].left = EdgeType.ROOM_WALL
         } else if (neighbor.y > ry) {
-          newMap.edges[rx][ry].bottom = EdgeType.ROOM_WALL
+          map.edges[rx][ry].bottom = EdgeType.ROOM_WALL
         } else if (neighbor.y < ry) {
-          newMap.edges[rx][ry].top = EdgeType.ROOM_WALL
+          map.edges[rx][ry].top = EdgeType.ROOM_WALL
         }
       }
     })
@@ -125,13 +124,13 @@ export const growRoom = (
 
   // Add doors
   EDGE_CONFIGS.forEach((config) => {
-    const doorCandidate = findDoorCandidate(config, roomTiles, newMap, origin)
+    const doorCandidate = findDoorCandidate(config, roomTiles, map, origin)
     if (doorCandidate) {
-      newMap.edges[doorCandidate.x][doorCandidate.y]![config.edgeKey] = EdgeType.REINFORCED_DOOR
+      map.edges[doorCandidate.x][doorCandidate.y]![config.edgeKey] = EdgeType.REINFORCED_DOOR
     }
   })
 
-  return newMap
+  return map
 }
 
 /**
@@ -156,28 +155,27 @@ export const generateRoomsAtIntersections = (
   roomSizeMin: number,
   roomSizeMax: number,
 ): GameMap => {
-  let newMap = _.cloneDeep(map)
-  const possibleIntersections = shuffle(getPossibleIntersections(newMap, wallStep))
+  const possibleIntersections = shuffle(getPossibleIntersections(map, wallStep))
 
   while (possibleIntersections.length) {
     const intersection = possibleIntersections.pop()!
     const nearestRoomOrigin = findNearestTile(
-      newMap,
+      map,
       intersection.x,
       intersection.y,
       TileType.ROOM_ORIGIN,
     )
 
     if (
-      !isWithinDistanceFromBorder(newMap, intersection, wallStep + corridorStep) &&
+      !isWithinDistanceFromBorder(map, intersection, wallStep + corridorStep) &&
       (nearestRoomOrigin == null ||
         getDistance({ x: intersection.x, y: intersection.y }, nearestRoomOrigin) >
           2 * wallStep + corridorStep - 1)
     ) {
       const currentRoomSize = Math.round(roomSize * random(roomSizeMin, roomSizeMax))
-      newMap = growRoom(newMap, intersection.x, intersection.y, currentRoomSize, roomMaxRadius)
+      map = growRoom(map, intersection.x, intersection.y, currentRoomSize, roomMaxRadius)
     }
   }
 
-  return newMap
+  return map
 }

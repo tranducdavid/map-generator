@@ -89,29 +89,27 @@ export const createEdgesBetweenTiles = (
   tileTypes2: TileType[],
   edgeType: EdgeType,
 ): GameMap => {
-  let newMap = _.cloneDeep(map)
-
   for (const tile of roomTiles) {
-    const neighbors = getNeighbors(tile.x, tile.y, newMap)
+    const neighbors = getNeighbors(tile.x, tile.y, map)
 
     for (const neighbor of neighbors) {
-      const currentTileType = newMap.tiles[tile.x][tile.y]
-      const neighborTileType = newMap.tiles[neighbor.x][neighbor.y]
+      const currentTileType = map.tiles[tile.x][tile.y]
+      const neighborTileType = map.tiles[neighbor.x][neighbor.y]
 
       if (tileTypes1.includes(currentTileType!) && tileTypes2.includes(neighborTileType!)) {
         // Set the appropriate edge type based on the direction of the neighboring tiles
-        if (tile.x < neighbor.x) newMap.edges[tile.x][tile.y]!.right = edgeType
-        else if (tile.x > neighbor.x) newMap.edges[tile.x][tile.y]!.left = edgeType
-        else if (tile.y < neighbor.y) newMap.edges[tile.x][tile.y]!.bottom = edgeType
-        else if (tile.y > neighbor.y) newMap.edges[tile.x][tile.y]!.top = edgeType
+        if (tile.x < neighbor.x) map.edges[tile.x][tile.y]!.right = edgeType
+        else if (tile.x > neighbor.x) map.edges[tile.x][tile.y]!.left = edgeType
+        else if (tile.y < neighbor.y) map.edges[tile.x][tile.y]!.bottom = edgeType
+        else if (tile.y > neighbor.y) map.edges[tile.x][tile.y]!.top = edgeType
       } else if (tileTypes2.includes(currentTileType!) && tileTypes1.includes(neighborTileType!)) {
-        if (tile.x < neighbor.x) newMap.edges[tile.x][tile.y]!.right = edgeType
-        else if (tile.x > neighbor.x) newMap.edges[tile.x][tile.y]!.left = edgeType
-        else if (tile.y < neighbor.y) newMap.edges[tile.x][tile.y]!.bottom = edgeType
-        else if (tile.y > neighbor.y) newMap.edges[tile.x][tile.y]!.top = edgeType
+        if (tile.x < neighbor.x) map.edges[tile.x][tile.y]!.right = edgeType
+        else if (tile.x > neighbor.x) map.edges[tile.x][tile.y]!.left = edgeType
+        else if (tile.y < neighbor.y) map.edges[tile.x][tile.y]!.bottom = edgeType
+        else if (tile.y > neighbor.y) map.edges[tile.x][tile.y]!.top = edgeType
       }
     }
   }
 
-  return newMap
+  return map
 }

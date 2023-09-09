@@ -29,18 +29,16 @@ export const constructCorridor = (
   end: Point,
   corridorStep: number,
 ): GameMap => {
-  let newMap = _.cloneDeep(map)
-
   // Decide the direction of the corridor based on the relative positions of the two points
   if (random() > 0.5) {
-    newMap = constructHorizontal(newMap, start, end, corridorStep)
-    newMap = constructVertical(newMap, { x: end.x, y: start.y }, end, corridorStep)
+    map = constructHorizontal(map, start, end, corridorStep)
+    map = constructVertical(map, { x: end.x, y: start.y }, end, corridorStep)
   } else {
-    newMap = constructVertical(newMap, start, end, corridorStep)
-    newMap = constructHorizontal(newMap, { x: start.x, y: end.y }, end, corridorStep)
+    map = constructVertical(map, start, end, corridorStep)
+    map = constructHorizontal(map, { x: start.x, y: end.y }, end, corridorStep)
   }
 
-  return newMap
+  return map
 }
 
 const constructHorizontal = (
@@ -49,23 +47,14 @@ const constructHorizontal = (
   end: Point,
   corridorStep: number,
 ): GameMap => {
-  let newMap = _.cloneDeep(map)
-
   const startX = Math.min(start.x, end.x)
   const endX = Math.max(start.x, end.x)
 
   for (let x = startX; x <= endX; x++) {
-    newMap = createCorridorRectangle(
-      newMap,
-      x,
-      start.y,
-      corridorStep,
-      TileType.CORRIDOR,
-      TileType.WALL,
-    )
+    map = createCorridorRectangle(map, x, start.y, corridorStep, TileType.CORRIDOR, TileType.WALL)
   }
 
-  return newMap
+  return map
 }
 
 const constructVertical = (
@@ -74,23 +63,14 @@ const constructVertical = (
   end: Point,
   corridorStep: number,
 ): GameMap => {
-  let newMap = _.cloneDeep(map)
-
   const startY = Math.min(start.y, end.y)
   const endY = Math.max(start.y, end.y)
 
   for (let y = startY; y <= endY; y++) {
-    newMap = createCorridorRectangle(
-      newMap,
-      start.x,
-      y,
-      corridorStep,
-      TileType.CORRIDOR,
-      TileType.WALL,
-    )
+    map = createCorridorRectangle(map, start.x, y, corridorStep, TileType.CORRIDOR, TileType.WALL)
   }
 
-  return newMap
+  return map
 }
 
 /**
@@ -107,43 +87,42 @@ const constructVertical = (
  * const newMap = removeIsolatedCorridors(oldMap);
  */
 export const removeIsolatedCorridors = (map: GameMap): GameMap => {
-  const newMap = _.cloneDeep(map)
-  const visited: boolean[][] = Array.from({ length: newMap.tiles.length }, () =>
-    Array(newMap.tiles[0].length).fill(false),
+  const visited: boolean[][] = Array.from({ length: map.tiles.length }, () =>
+    Array(map.tiles[0].length).fill(false),
   )
 
   // Flood fill starting from rooms or room origins
   const floodFill = (x: number, y: number) => {
-    if (visited[x][y] || newMap.tiles[x][y] === TileType.WALL) {
+    if (visited[x][y] || map.tiles[x][y] === TileType.WALL) {
       return
     }
 
     visited[x][y] = true
 
     if (
-      newMap.tiles[x][y] === TileType.CORRIDOR ||
-      newMap.tiles[x][y] === TileType.ROOM ||
-      newMap.tiles[x][y] === TileType.ROOM_ORIGIN
+      map.tiles[x][y] === TileType.CORRIDOR ||
+      map.tiles[x][y] === TileType.ROOM ||
+      map.tiles[x][y] === TileType.ROOM_ORIGIN
     ) {
-      for (const neighbor of getNeighbors(x, y, newMap)) {
+      for (const neighbor of getNeighbors(x, y, map)) {
         floodFill(neighbor.x, neighbor.y)
       }
     }
   }
 
   // Start the flood fill from all room-origin tiles (or any room tile)
-  for (let x = 0; x < newMap.tiles.length; x++) {
-    for (let y = 0; y < newMap.tiles[0].length; y++) {
-      if (newMap.tiles[x][y] === TileType.ROOM_ORIGIN) {
+  for (let x = 0; x < map.tiles.length; x++) {
+    for (let y = 0; y < map.tiles[0].length; y++) {
+      if (map.tiles[x][y] === TileType.ROOM_ORIGIN) {
         floodFill(x, y)
       }
     }
   }
 
   return {
-    ...newMap,
+    ...map,
     // Any corridor tile that wasn't visited during the flood fill is isolated
-    tiles: newMap.tiles.map((row, x) =>
+    tiles: map.tiles.map((row, x) =>
       row.map((tile, y) => {
         if (!visited[x][y] && tile === TileType.CORRIDOR) {
           return TileType.WALL
@@ -203,8 +182,6 @@ export const createSecretCorridors = (
   neighbors: Point[],
   corridorStep: number,
 ): GameMap => {
-  let newMap = _.cloneDeep(map)
-
   for (const neighbor of neighbors) {
     // Calculate the direction of the neighbor relative to the central point
     const deltaX = neighbor.x - centralPoint.x
@@ -219,8 +196,8 @@ export const createSecretCorridors = (
     const startY = centralPoint.y + (deltaY >= 0 ? 0 : -corridorHeight + 1)
 
     // Create the corridor towards the neighbor
-    newMap = createRectangleInMap(
-      newMap,
+    map = createRectangleInMap(
+      map,
       startX,
       startY,
       corridorWidth,
@@ -229,9 +206,9 @@ export const createSecretCorridors = (
       TileType.WALL,
     )
 
-    const roomTiles = getRectanglePoints(newMap, startX, startY, corridorWidth, corridorHeight)
-    newMap = createEdgesBetweenTiles(
-      newMap,
+    const roomTiles = getRectanglePoints(map, startX, startY, corridorWidth, corridorHeight)
+    map = createEdgesBetweenTiles(
+      map,
       roomTiles,
       [TileType.SECRET_CORRIDOR],
       [TileType.CORRIDOR, TileType.ROOM, TileType.ROOM_ORIGIN],
@@ -239,7 +216,7 @@ export const createSecretCorridors = (
     )
   }
 
-  return newMap
+  return map
 }
 
 /**
@@ -251,18 +228,16 @@ export const createSecretCorridors = (
  * @returns The game map.
  */
 export const generateSecretCorridorsFromRoomOrigins = (map: GameMap, wallStep: number): GameMap => {
-  let newMap = _.cloneDeep(map)
-
-  const roomOrigins = getTiles(newMap, TileType.ROOM_ORIGIN)
+  const roomOrigins = getTiles(map, TileType.ROOM_ORIGIN)
 
   roomOrigins.forEach(({ x, y }) => {
-    newMap = createSecretCorridors(
-      newMap,
+    map = createSecretCorridors(
+      map,
       { x, y },
-      getUnvisitedNeighbors(x, y, newMap, wallStep, ALL_TILE_TYPES),
+      getUnvisitedNeighbors(x, y, map, wallStep, ALL_TILE_TYPES),
       1,
     )
   })
 
-  return newMap
+  return map
 }

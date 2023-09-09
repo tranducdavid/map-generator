@@ -51,21 +51,20 @@ export const createRectangleInMap = (
   tileType: TileType,
   replaceType?: TileType,
 ): GameMap => {
-  const newMap = _.cloneDeep(map)
   const xEnd = x + width - 1
   const yEnd = y + height - 1
 
   for (let i = x; i <= xEnd; i++) {
     for (let j = y; j <= yEnd; j++) {
-      if (isWithinBounds(i, j, newMap)) {
-        if (replaceType === undefined || newMap.tiles[i][j] === replaceType) {
-          newMap.tiles[i][j] = tileType
+      if (isWithinBounds(i, j, map)) {
+        if (replaceType === undefined || map.tiles[i][j] === replaceType) {
+          map.tiles[i][j] = tileType
         }
       }
     }
   }
 
-  return newMap
+  return map
 }
 
 /**
@@ -319,9 +318,6 @@ export const allSurroundingTilesOfTypes = (
  * @param {number} width - The width of the rectangle.
  * @param {number} height - The height of the rectangle.
  * @returns {Point[]} An array of points within the defined rectangle.
- *
- * @example
- * const rectanglePoints = getRectanglePoints(5, 5, 3, 3, gameMap);
  */
 export const getRectanglePoints = (
   map: GameMap,
