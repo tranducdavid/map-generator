@@ -27,6 +27,16 @@ export type Edge = {
   left?: EdgeType
 }
 
+export type EdgeConfig = {
+  direction: 'north' | 'south' | 'east' | 'west'
+  edgeKey: 'top' | 'bottom' | 'left' | 'right'
+  dx: number
+  dy: number
+  compare: (a: number, b: number) => boolean
+  originCompare: (a: number, b: number) => boolean
+  defaultAcc: number
+}
+
 export type GameMap = {
   tiles: (TileType | null)[][]
   edges: (Edge | null)[][]

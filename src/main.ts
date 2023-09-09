@@ -24,7 +24,7 @@ import { fillMapBorders, shrinkMap } from './map/mapBorders'
 
 const generateMap = () => {
   // Constants defining the map
-  const MAP_WIDTH = 100
+  const MAP_WIDTH = 120
   const MAP_HEIGHT = 100
   const WALL_STEP = 8
   const CORRIDOR_STEP = 2

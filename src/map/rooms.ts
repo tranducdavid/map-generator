@@ -1,26 +1,37 @@
 import _ from 'lodash'
 import { EdgeType, GameMap, Point, TileType } from '../types'
 import {
+  allSurroundingTilesOfTypes,
   findNearestTile,
   getDistance,
+  getNeighbors,
   getPossibleIntersections,
   getUnvisitedNeighbors,
   isWithinDistanceFromBorder,
+  tileHasEdgeType,
 } from './common'
 import { random, sample, shuffle } from '../utils/random'
+import { EDGE_CONFIGS, findRoomCadidateEdge as findDoorCandidate } from './edges'
 
 /**
- * Grows a room from the specified origin point within a game map. The room growth process is limited by the specified maximum size.
- * It starts by setting the origin point as `ROOM_ORIGIN` and then tries to expand the room by converting adjacent `WALL` tiles to `ROOM` tiles.
- * The expansion process respects the constraints of the maximum size and has a safeguard for a maximum number of iterations.
+ * Grows a room from the specified point on the map, creating an area of connected tiles up to a given size and radius.
  *
- * @param map - The game map in which the room is to be grown.
- * @param x - The x-coordinate of the origin point from where the room should start growing.
- * @param y - The y-coordinate of the origin point from where the room should start growing.
- * @param maxSize - The maximum size or number of tiles the room can grow to, including the origin.
- * @param maxRadius - The maximum radius around the starting point `(x, y)` within which the room can grow.
- * @returns A new game map with the grown room.
+ * The function works by expanding outwards from the given point, converting tiles of overridable types (e.g., `WALL` and `CORRIDOR`)
+ * into room tiles. The growth is controlled by parameters like `maxSize` and `maxRadius`, ensuring the room doesn't exceed the desired
+ * boundaries.
  *
+ * In addition to growing the room, the function can also transform corridors enclosed by rooms or walls into room tiles, and walls enclosed by rooms into room tiles.
+ * It also takes care of setting room origin and edges, and adding reinforced doors on the room's edges.
+ *
+ * @param {GameMap} map - The initial game map where the room should be grown.
+ * @param {number} x - The x-coordinate of the point where the room should start growing.
+ * @param {number} y - The y-coordinate of the point where the room should start growing.
+ * @param {number} maxSize - The maximum number of tiles the room can occupy.
+ * @param {number} maxRadius - The maximum distance from the origin (in tiles) the room can grow.
+ * @returns {GameMap} - A new map with the grown room.
+ *
+ * @example
+ * const updatedMap = growRoom(initialMap, 5, 5, 20, 4);
  */
 export const growRoom = (
   map: GameMap,
@@ -34,13 +45,17 @@ export const growRoom = (
     return newMap
   }
 
+  const origin: Point = { x, y }
+
   const overridableTileTypes = [TileType.WALL, TileType.CORRIDOR]
+  const roomTileTypes = [TileType.ROOM, TileType.ROOM_ORIGIN]
   const points: Point[] = [{ x, y }]
   const roomTiles: Point[] = []
   const iterationsMax = 10000 // max iterations
   let size = 0
   let iteration = 0
 
+  // Generate room tiles
   while (points.length && size < maxSize && iteration < iterationsMax) {
     iteration++
 
@@ -60,9 +75,28 @@ export const growRoom = (
     }
   }
 
+  // Find corridors enclosed by rooms and walls and turn them to room tiles
+  // Find walls enclosed by rooms and turn them to room tiles
+  roomTiles.forEach((tile) => {
+    getNeighbors(tile.x, tile.y, newMap).forEach((neighbor) => {
+      if (
+        (newMap.tiles[neighbor.x][neighbor.y] === TileType.CORRIDOR &&
+          allSurroundingTilesOfTypes(newMap, neighbor.x, neighbor.y, [
+            TileType.ROOM,
+            TileType.WALL,
+          ])) ||
+        (newMap.tiles[neighbor.x][neighbor.y] === TileType.WALL &&
+          allSurroundingTilesOfTypes(newMap, neighbor.x, neighbor.y, [TileType.ROOM]))
+      ) {
+        newMap.tiles[neighbor.x][neighbor.y] = TileType.ROOM
+      }
+    })
+  })
+
+  // Set room origin
   newMap.tiles[x][y] = TileType.ROOM_ORIGIN
 
-  // Set edges of the room
+  // Set edges of the room to walls
   roomTiles.forEach(({ x: rx, y: ry }) => {
     // Check each neighbor of the room tile
     ;[
@@ -81,22 +115,25 @@ export const growRoom = (
           newMap.edges[rx][ry] = {}
         }
 
-        const edgeType =
-          newMap.tiles[neighbor.x][neighbor.y] === TileType.CORRIDOR
-            ? EdgeType.REINFORCED_DOOR
-            : EdgeType.ROOM_WALL
-
         if (neighbor.x > rx) {
-          newMap.edges[rx][ry]!.right = edgeType
+          newMap.edges[rx][ry]!.right = EdgeType.ROOM_WALL
         } else if (neighbor.x < rx) {
-          newMap.edges[rx][ry]!.left = edgeType
+          newMap.edges[rx][ry]!.left = EdgeType.ROOM_WALL
         } else if (neighbor.y > ry) {
-          newMap.edges[rx][ry]!.bottom = edgeType
+          newMap.edges[rx][ry]!.bottom = EdgeType.ROOM_WALL
         } else if (neighbor.y < ry) {
-          newMap.edges[rx][ry]!.top = edgeType
+          newMap.edges[rx][ry]!.top = EdgeType.ROOM_WALL
         }
       }
     })
+  })
+
+  // Add doors
+  EDGE_CONFIGS.forEach((config) => {
+    const doorCandidate = findDoorCandidate(config, roomTiles, newMap, origin)
+    if (doorCandidate) {
+      newMap.edges[doorCandidate.x][doorCandidate.y]![config.edgeKey] = EdgeType.REINFORCED_DOOR
+    }
   })
 
   return newMap

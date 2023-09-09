@@ -1,5 +1,5 @@
 import _ from 'lodash'
-import { GameMap, Point, TileType } from '../types'
+import { EdgeType, GameMap, Point, TileType } from '../types'
 
 /**
  * Creates a game map with specified dimensions.
@@ -254,4 +254,54 @@ export const getTiles = (map: GameMap, tileType: TileType): Point[] => {
       row.map((cell, y) => ({ x, y, type: cell })).filter((point) => point.type === tileType),
     )
     .map(({ x, y }) => ({ x, y })) // Strip the type information after filtering
+}
+
+/**
+ * Checks if a given tile (specified by its x, y coordinates) has an edge of a certain type.
+ *
+ * @param map - The game map to check against.
+ * @param x - The x-coordinate of the tile.
+ * @param y - The y-coordinate of the tile.
+ * @param edgeType - The type of edge to check for.
+ * @returns `true` if the tile has the specified edge type, otherwise `false`.
+ */
+export const tileHasEdgeType = (
+  map: GameMap,
+  x: number,
+  y: number,
+  edgeType: EdgeType,
+): boolean => {
+  const tileEdges = map.edges[x][y]
+
+  if (!tileEdges) return false
+
+  return Object.values(tileEdges).some((type) => type === edgeType)
+}
+
+/**
+ * Checks if all of the tiles surrounding a given tile (specified by its x, y coordinates) are among certain types.
+ *
+ * @param map - The game map to check against.
+ * @param x - The x-coordinate of the tile.
+ * @param y - The y-coordinate of the tile.
+ * @param tileTypes - The array of types of tiles to check for.
+ * @returns `true` if all of the surrounding tiles are of the specified types, otherwise `false`.
+ */
+export const allSurroundingTilesOfTypes = (
+  map: GameMap,
+  x: number,
+  y: number,
+  tileTypes: TileType[],
+): boolean => {
+  // Get all neighboring tiles
+  const neighbors = getNeighbors(x, y, map)
+
+  // Check each neighboring tile
+  for (let neighbor of neighbors) {
+    if (!tileTypes.includes(map.tiles[neighbor.x][neighbor.y]!)) {
+      return false
+    }
+  }
+
+  return true
 }
