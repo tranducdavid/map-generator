@@ -1,21 +1,36 @@
 import { createCanvas } from 'canvas'
 import { EdgeType, GameMap, TileType } from '../types'
 
-const TILE_SIZE = 16
+const TILE_SIZE = 32
 const BORDER_WIDTH = 2
 
 export const renderGameMapToImage = (
   map: GameMap,
   tileColorMapping: Record<TileType, string>,
   edgeColorMapping: Record<EdgeType, string>,
+  tileTextMapping: Partial<Record<TileType, string>>,
 ): Buffer => {
   const canvas = createCanvas(map.tiles.length * TILE_SIZE, map.tiles[0].length * TILE_SIZE)
   const ctx = canvas.getContext('2d')
 
   map.tiles.forEach((row, x) => {
     row.forEach((tile, y) => {
+      // Fill tile with color
       ctx.fillStyle = tile ? tileColorMapping[tile] : '#FFFFFF' // White for null tiles
       ctx.fillRect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE)
+
+      // Render text if the tile type has corresponding text in the mapping
+      if (tile && tileTextMapping[tile]) {
+        ctx.fillStyle = '#000000' // Text color (can be adjusted)
+        ctx.font = `${TILE_SIZE / 2}px Arial` // Font settings (can be adjusted)
+        ctx.textAlign = 'center'
+        ctx.textBaseline = 'middle'
+        ctx.fillText(
+          tileTextMapping[tile]!,
+          x * TILE_SIZE + TILE_SIZE / 2,
+          y * TILE_SIZE + TILE_SIZE / 2,
+        )
+      }
     })
   })
 

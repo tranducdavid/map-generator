@@ -8,6 +8,7 @@ export enum TileType {
   SPIKES = 'spikes',
   LAVA = 'lava',
   SLIDE = 'slide',
+  TRAP_SLIDE = 'trapSlide',
 }
 
 export const ALL_TILE_TYPES: TileType[] = Object.values(TileType)

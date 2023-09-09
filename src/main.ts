@@ -11,8 +11,10 @@ import { profile } from './utils/profiling'
 import {
   publicEdgeColorMapping,
   publicTileColorMapping,
+  publicTileTextMapping,
   secretEdgeColorMapping,
   secretTileColorMapping,
+  secretTileTextMapping,
 } from './mappings'
 import { placeTraps } from './map/traps'
 
@@ -32,7 +34,7 @@ import { placeTraps } from './map/traps'
 
 const generateMap = () => {
   // Constants defining the map
-  const MAP_WIDTH = 120
+  const MAP_WIDTH = 100
   const MAP_HEIGHT = 100
   const WALL_STEP = 8
   const CORRIDOR_STEP = 2
@@ -71,11 +73,21 @@ const generateMap = () => {
   // Export
   writeFileSync(
     'outputSecret.png',
-    profile(renderGameMapToImage)(globalMap, secretTileColorMapping, secretEdgeColorMapping),
+    profile(renderGameMapToImage)(
+      globalMap,
+      secretTileColorMapping,
+      secretEdgeColorMapping,
+      secretTileTextMapping,
+    ),
   )
   writeFileSync(
     'outputPublic.png',
-    profile(renderGameMapToImage)(globalMap, publicTileColorMapping, publicEdgeColorMapping),
+    profile(renderGameMapToImage)(
+      globalMap,
+      publicTileColorMapping,
+      publicEdgeColorMapping,
+      publicTileTextMapping,
+    ),
   )
   writeFileSync('output.json', JSON.stringify(globalMap))
 }
