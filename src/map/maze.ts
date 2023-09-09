@@ -2,6 +2,7 @@ import { GameMap, TileType, Point } from '../types'
 import { createGameMap, getUnvisitedNeighbors } from './common'
 import { random } from '../utils/random'
 import { createCorridorRectangle } from './corridors'
+import { profile } from '../utils/profiling'
 
 /**
  * Generates a maze with adjustable wall and corridor thickness.
@@ -29,27 +30,29 @@ export const generateMaze = (
   map = createCorridorRectangle(map, startX, startY, corridorStep)
   stack.push({ x: startX, y: startY })
 
-  while (stack.length > 0) {
-    const current = stack.pop()!
-    const neighbors = getUnvisitedNeighbors(current.x, current.y, map, wallStep)
+  profile(() => {
+    while (stack.length > 0) {
+      const current = stack.pop()!
+      const neighbors = getUnvisitedNeighbors(current.x, current.y, map, wallStep)
 
-    if (neighbors.length) {
-      stack.push(current)
+      if (neighbors.length) {
+        stack.push(current)
 
-      const randomNeighbor = neighbors[Math.floor(random() * neighbors.length)]
-      const dx = (randomNeighbor.x - current.x) / 2
-      const dy = (randomNeighbor.y - current.y) / 2
+        const randomNeighbor = neighbors[Math.floor(random() * neighbors.length)]
+        const dx = (randomNeighbor.x - current.x) / 2
+        const dy = (randomNeighbor.y - current.y) / 2
 
-      for (let i = 1; i < wallStep; i++) {
-        const x = current.x + i * Math.sign(dx)
-        const y = current.y + i * Math.sign(dy)
-        map = createCorridorRectangle(map, x, y, corridorStep)
+        for (let i = 1; i < wallStep; i++) {
+          const x = current.x + i * Math.sign(dx)
+          const y = current.y + i * Math.sign(dy)
+          map = createCorridorRectangle(map, x, y, corridorStep)
+        }
+        map = createCorridorRectangle(map, randomNeighbor.x, randomNeighbor.y, corridorStep)
+
+        stack.push(randomNeighbor)
       }
-      map = createCorridorRectangle(map, randomNeighbor.x, randomNeighbor.y, corridorStep)
-
-      stack.push(randomNeighbor)
     }
-  }
+  })()
 
   return map
 }

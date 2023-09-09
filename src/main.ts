@@ -7,6 +7,7 @@ import { generateMaze } from './map/maze'
 import { generateSecretCorridorsFromRoomOrigins, removeIsolatedCorridors } from './map/corridors'
 import { generateRoomsAtIntersections } from './map/rooms'
 import { fillMapBorders, shrinkMap } from './map/mapBorders'
+import { profile } from './utils/profiling'
 
 // const globalMap = createGameMap(10, 10, TileType.WALL)
 
@@ -35,30 +36,30 @@ const generateMap = () => {
   const ROOM_SIZE_MAX = 0.75
 
   // Generate Maze
-  let globalMap = generateMaze(MAP_WIDTH, MAP_HEIGHT, WALL_STEP, CORRIDOR_STEP)
+  let globalMap = profile(generateMaze)(MAP_WIDTH, MAP_HEIGHT, WALL_STEP, CORRIDOR_STEP)
 
   // Generate rooms
   // prettier-ignore
-  globalMap = generateRoomsAtIntersections( globalMap, WALL_STEP, CORRIDOR_STEP, ROOM_MAX_RADIUS, ROOM_SIZE, ROOM_SIZE_MIN, ROOM_SIZE_MAX)
+  globalMap = profile(generateRoomsAtIntersections)( globalMap, WALL_STEP, CORRIDOR_STEP, ROOM_MAX_RADIUS, ROOM_SIZE, ROOM_SIZE_MIN, ROOM_SIZE_MAX)
 
   // Remove corridors from map borders
-  globalMap = fillMapBorders(globalMap, CORRIDOR_STEP, TileType.WALL)
+  globalMap = profile(fillMapBorders)(globalMap, CORRIDOR_STEP, TileType.WALL)
 
   // Remove isolated corridors
-  globalMap = removeIsolatedCorridors(globalMap)
+  globalMap = profile(removeIsolatedCorridors)(globalMap)
 
   // Connect clusters, which were created because of removing the corridors from map borders
-  const clusters = findIsolatedClusters(globalMap)
-  globalMap = connectClusters(globalMap, clusters, WALL_STEP, CORRIDOR_STEP)
+  const clusters = profile(findIsolatedClusters)(globalMap)
+  globalMap = profile(connectClusters)(globalMap, clusters, WALL_STEP, CORRIDOR_STEP)
 
   // Create secret corridors
-  globalMap = generateSecretCorridorsFromRoomOrigins(globalMap, WALL_STEP)
+  globalMap = profile(generateSecretCorridorsFromRoomOrigins)(globalMap, WALL_STEP)
 
   // Shrink map
-  globalMap = shrinkMap(globalMap, CORRIDOR_STEP)
+  globalMap = profile(shrinkMap)(globalMap, CORRIDOR_STEP)
 
   // Export
-  const imageBuffer = renderGameMapToImage(globalMap)
+  const imageBuffer = profile(renderGameMapToImage)(globalMap)
   writeFileSync('output.png', imageBuffer)
   writeFileSync('output.json', JSON.stringify(globalMap))
 }
