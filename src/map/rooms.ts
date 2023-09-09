@@ -1,5 +1,5 @@
 import _ from 'lodash'
-import { GameMap, Point, TileType } from '../types'
+import { EdgeType, GameMap, Point, TileType } from '../types'
 import {
   findNearestTile,
   getDistance,
@@ -36,6 +36,7 @@ export const growRoom = (
 
   const overridableTileTypes = [TileType.WALL, TileType.CORRIDOR]
   const points: Point[] = [{ x, y }]
+  const roomTiles: Point[] = []
   const iterationsMax = 10000 // max iterations
   let size = 0
   let iteration = 0
@@ -46,12 +47,12 @@ export const growRoom = (
     const current = sample(points)!
     _.remove(points, (point) => point === current)
 
-    const isOverridableTile =
-      newMap.tiles[current.x][current.y] === TileType.WALL ||
-      newMap.tiles[current.x][current.y] === TileType.CORRIDOR
+    const isOverridableTile = overridableTileTypes.includes(newMap.tiles[current.x][current.y]!)
     const isWithinDistance = getDistance(current, { x, y }) <= maxRadius
+
     if (isOverridableTile && isWithinDistance) {
       newMap.tiles[current.x][current.y] = TileType.ROOM
+      roomTiles.push(current)
       size++
 
       const neighbors = getUnvisitedNeighbors(current.x, current.y, newMap, 1, overridableTileTypes)
@@ -60,6 +61,43 @@ export const growRoom = (
   }
 
   newMap.tiles[x][y] = TileType.ROOM_ORIGIN
+
+  // Set edges of the room
+  roomTiles.forEach(({ x: rx, y: ry }) => {
+    // Check each neighbor of the room tile
+    ;[
+      { x: rx + 1, y: ry },
+      { x: rx - 1, y: ry },
+      { x: rx, y: ry + 1 },
+      { x: rx, y: ry - 1 },
+    ].forEach((neighbor) => {
+      if (
+        newMap.tiles[neighbor.x] &&
+        newMap.tiles[neighbor.x][neighbor.y] !== TileType.ROOM &&
+        newMap.tiles[neighbor.x][neighbor.y] !== TileType.ROOM_ORIGIN
+      ) {
+        // Ensure the edge object is initialized
+        if (!newMap.edges[rx][ry]) {
+          newMap.edges[rx][ry] = {}
+        }
+
+        const edgeType =
+          newMap.tiles[neighbor.x][neighbor.y] === TileType.CORRIDOR
+            ? EdgeType.REINFORCED_DOOR
+            : EdgeType.ROOM_WALL
+
+        if (neighbor.x > rx) {
+          newMap.edges[rx][ry]!.right = edgeType
+        } else if (neighbor.x < rx) {
+          newMap.edges[rx][ry]!.left = edgeType
+        } else if (neighbor.y > ry) {
+          newMap.edges[rx][ry]!.bottom = edgeType
+        } else if (neighbor.y < ry) {
+          newMap.edges[rx][ry]!.top = edgeType
+        }
+      }
+    })
+  })
 
   return newMap
 }

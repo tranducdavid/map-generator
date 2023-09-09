@@ -10,7 +10,14 @@ import { GameMap, TileType } from '../types'
  */
 export const shrinkMap = (map: GameMap, corridorStep: number): GameMap => {
   const newMap = _.cloneDeep(map)
+
+  // Adjust the tiles
   newMap.tiles = newMap.tiles
+    .slice(corridorStep, -corridorStep)
+    .map((row) => row.slice(corridorStep, -corridorStep))
+
+  // Adjust the edges
+  newMap.edges = newMap.edges
     .slice(corridorStep, -corridorStep)
     .map((row) => row.slice(corridorStep, -corridorStep))
 

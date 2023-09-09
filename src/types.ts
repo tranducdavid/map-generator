@@ -12,6 +12,7 @@ export enum TileType {
 export const ALL_TILE_TYPES: TileType[] = Object.values(TileType) as TileType[]
 
 export enum EdgeType {
+  ROOM_WALL = 'ROOM_WALL',
   HIDDEN = 'HIDDEN',
   DOOR = 'DOOR',
   REINFORCED_DOOR = 'REINFORCED_DOOR',
