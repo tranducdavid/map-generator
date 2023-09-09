@@ -1,6 +1,6 @@
 import { createCanvas } from 'canvas'
-import { GameMap } from './types'
-import { tileColorMapping, edgeColorMapping } from './mappings'
+import { GameMap } from '../types'
+import { tileColorMapping, edgeColorMapping } from '../mappings'
 
 const TILE_SIZE = 16
 const BORDER_WIDTH = 2

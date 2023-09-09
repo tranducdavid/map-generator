@@ -1,5 +1,5 @@
 import _ from 'lodash'
-import { GameMap, Point, TileType } from './types'
+import { GameMap, Point, TileType } from '../types'
 
 /**
  * Creates a game map with specified dimensions.
@@ -69,40 +69,6 @@ export const createRectangleInMap = (
 }
 
 /**
- * Returns a new map with a rectangle of type `TileType.CORRIDOR` centered at the given coordinates.
- * The original map remains unchanged. The size of the rectangle is based on the `corridorStep`.
- *
- * @param map - The original game map.
- * @param x - The x-coordinate of the top-left corner of the rectangle.
- * @param y - The y-coordinate of the top-left corner of the rectangle.
- * @param corridorStep - The size variable which determines the width and height of the corridor rectangle.
- * @param tileType - The type of tile to fill the rectangle with. Defaults to `TileType.CORRIDOR`.
- * @param replaceType - Optional. The tile type to be replaced. If specified, only tiles of this type will be replaced.
- * @returns A new game map with the corridor rectangle.
- *
- * @example
- * const updatedMap = createCorridorRectangle(map, 5, 5, 3);
- */
-export const createCorridorRectangle = (
-  map: GameMap,
-  x: number,
-  y: number,
-  corridorStep: number,
-  tileType: TileType = TileType.CORRIDOR,
-  replaceType?: TileType,
-): GameMap => {
-  return createRectangleInMap(
-    map,
-    x - Math.floor(corridorStep / 2),
-    y - Math.floor(corridorStep / 2),
-    corridorStep,
-    corridorStep,
-    tileType,
-    replaceType,
-  )
-}
-
-/**
  * Retrieves possible intersection points from the given game map based on a specified wall step.
  *
  * This function scans the map tiles in intervals defined by `wallStep` to identify possible
@@ -118,59 +84,6 @@ export const getPossibleIntersections = (map: GameMap, wallStep: number): Point[
   for (let x = 0; x < map.tiles.length - 1; x = x + wallStep) {
     for (let y = 0; y < map.tiles[0].length - 1; y = y + wallStep) {
       points.push({ x, y })
-    }
-  }
-
-  return points
-}
-
-/**
- * Retrieves intersection points within a cluster based on a specified wall step.
- *
- * This function scans the vicinity of the cluster in intervals defined by `wallStep` to identify
- * intersection locations. It determines the boundaries of the cluster and then checks
- * tiles within those boundaries at the specified interval. Only tiles that are of type corridor,
- * room, or room origin and that belong to the provided cluster are considered as intersections.
- *
- * @param map - The game map to be scanned for intersections.
- * @param cluster - The cluster of points for which to find intersections.
- * @param wallStep - The interval at which tiles are checked for intersections.
- * @param corridorStep - The size variable which determines the width and height of the corridor rectangle.
- * @returns An array of points indicating intersection locations within the cluster's vicinity.
- */
-export const getIntersectionsInCluster = (
-  map: GameMap,
-  cluster: Point[],
-  wallStep: number,
-  corridorStep: number,
-): Point[] => {
-  const points: Point[] = []
-  for (
-    let x = wallStep + Math.floor(corridorStep / 2);
-    x < map.tiles.length - Math.floor(corridorStep / 2);
-    x += wallStep
-  ) {
-    for (
-      let y = wallStep + Math.floor(corridorStep / 2);
-      y < map.tiles[0].length - Math.floor(corridorStep / 2);
-      y += wallStep
-    ) {
-      // Ensure the coordinates are within the map's boundaries and belong to the cluster.
-      if (
-        x < map.tiles.length &&
-        y < map.tiles[0].length &&
-        cluster.some((p) => p.x === x && p.y === y)
-      ) {
-        // Check if the tile is a corridor, room, or room origin.
-        const tileType = map.tiles[x][y]
-        if (
-          tileType === TileType.CORRIDOR ||
-          tileType === TileType.ROOM ||
-          tileType === TileType.ROOM_ORIGIN
-        ) {
-          points.push({ x, y })
-        }
-      }
     }
   }
 
@@ -283,58 +196,6 @@ export const isWithinDistanceFromBorder = (
 }
 
 /**
- * Removes the borders of the given map and returns a new map without mutating the original.
- *
- * @param map - The game map from which borders need to be removed.
- * @param corridorStep - The size variable which determines the width and height of the corridor rectangle.
- * @returns A new game map without the outer borders.
- */
-export const removeMapBorders = (map: GameMap, corridorStep: number): GameMap => {
-  const newMap = _.cloneDeep(map)
-  newMap.tiles = newMap.tiles
-    .slice(corridorStep, -corridorStep)
-    .map((row) => row.slice(corridorStep, -corridorStep))
-
-  return newMap
-}
-
-/**
- * Fills the borders of the map with a specified tile type within a specified width.
- *
- * This function sets the tile type of the map's borders, within a width defined by `corridorStep`, to the provided `tileType`.
- *
- * @param map - The game map whose borders are to be overridden.
- * @param corridorStep - The width of the border to be overridden.
- * @param tileType - The tile type to be set on the overridden border.
- * @returns A new game map with the borders overridden as specified.
- */
-export const fillMapBorders = (map: GameMap, corridorStep: number, tileType: TileType): GameMap => {
-  const newMap = _.cloneDeep(map)
-
-  // Top and bottom borders
-  for (let x = 0; x < map.tiles.length; x++) {
-    for (let b = 0; b < corridorStep; b++) {
-      if (b < map.tiles[0].length) {
-        newMap.tiles[x][b] = tileType
-        newMap.tiles[x][map.tiles[0].length - 1 - b] = tileType
-      }
-    }
-  }
-
-  // Left and right borders
-  for (let y = 0; y < map.tiles[0].length; y++) {
-    for (let b = 0; b < corridorStep; b++) {
-      if (b < map.tiles.length) {
-        newMap.tiles[b][y] = tileType
-        newMap.tiles[map.tiles.length - 1 - b][y] = tileType
-      }
-    }
-  }
-
-  return newMap
-}
-
-/**
  * Retrieves the neighboring tiles of a given point on the game map.
  *
  * The function typically checks for tiles immediately adjacent to the given point.
@@ -366,49 +227,4 @@ export const getNeighbors = (x: number, y: number, map: GameMap): Point[] => {
   }
 
   return neighbors
-}
-
-/**
- * Finds isolated clusters within a given map.
- *
- * This function identifies isolated parts of the maze (corridors, rooms, and room origins)
- * and returns them as clusters. A cluster is a group of tiles that are connected to each other
- * but isolated from other tiles in the map.
- *
- * @param {GameMap} map - The map to analyze.
- * @returns {Point[][]} A list of clusters where each cluster is a list of points (tiles) belonging to that cluster.
- */
-export const findIsolatedClusters = (map: GameMap): Point[][] => {
-  const visited: boolean[][] = Array(map.tiles.length)
-    .fill(null)
-    .map(() => Array(map.tiles[0].length).fill(false))
-  const clusters: Point[][] = []
-
-  const floodFill = (x: number, y: number, currentCluster: Point[]) => {
-    if (visited[x][y] || map.tiles[x][y] === TileType.WALL) {
-      return
-    }
-
-    visited[x][y] = true
-    currentCluster.push({ x, y })
-
-    getNeighbors(x, y, map).forEach((neighbor) => floodFill(neighbor.x, neighbor.y, currentCluster))
-  }
-
-  for (let x = 0; x < map.tiles.length; x++) {
-    for (let y = 0; y < map.tiles[0].length; y++) {
-      if (
-        !visited[x][y] &&
-        (map.tiles[x][y] === TileType.CORRIDOR ||
-          map.tiles[x][y] === TileType.ROOM ||
-          map.tiles[x][y] === TileType.ROOM_ORIGIN)
-      ) {
-        const cluster: Point[] = []
-        floodFill(x, y, cluster)
-        if (cluster.length > 0) clusters.push(cluster)
-      }
-    }
-  }
-
-  return clusters
 }

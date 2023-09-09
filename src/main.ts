@@ -1,18 +1,19 @@
 import { writeFileSync } from 'fs'
-import { renderGameMapToImage } from './renderer'
-import { connectClusters, generateMaze, growRoom, removeIsolatedCorridors } from './mapGeneration'
+import { renderGameMapToImage } from './utils/renderer'
+import { connectClusters, findIsolatedClusters } from './map/clusters'
 import {
-  fillMapBorders,
-  findIsolatedClusters,
   findNearestTile,
   getDistance,
   getPossibleIntersections,
   isWithinDistanceFromBorder,
-  removeMapBorders,
-} from './utils'
+} from './map/common'
 import _ from 'lodash'
 import { TileType } from './types'
-import { random, shuffle } from './random'
+import { random, shuffle } from './utils/random'
+import { generateMaze } from './map/maze'
+import { removeIsolatedCorridors } from './map/corridors'
+import { growRoom } from './map/rooms'
+import { fillMapBorders, removeMapBorders } from './map/mapBorders'
 
 // const globalMap = createGameMap(10, 10, TileType.WALL)
 
@@ -66,7 +67,6 @@ const generateMap = () => {
   globalMap = fillMapBorders(globalMap, CORRIDOR_STEP, TileType.WALL)
   globalMap = removeIsolatedCorridors(globalMap)
   const clusters = findIsolatedClusters(globalMap)
-  console.log('Cluster Length: ', clusters.length)
   globalMap = connectClusters(globalMap, clusters, WALL_STEP, CORRIDOR_STEP)
   globalMap = removeMapBorders(globalMap, CORRIDOR_STEP)
 
