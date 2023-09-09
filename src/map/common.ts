@@ -363,3 +363,50 @@ export const expandPoints = (points: Point[]): Point[] => {
   // Convert the unique stringified points back to Point objects
   return Array.from(pointSet).map((pointStr) => JSON.parse(pointStr))
 }
+
+/**
+ * Checks if a tile or its surrounding tiles have a specified edge type.
+ *
+ * @param {Point} tile - The tile point to check around.
+ * @param {GameMap} map - The game map to inspect.
+ * @param {EdgeType} edgeType - The edge type to look for.
+ * @param {number} offset - The distance around the tile to check.
+ * @returns {boolean} - True if any surrounding tile (including itself) has the edge type, false otherwise.
+ */
+export const isTileNearEdgeType = (
+  tile: Point,
+  map: GameMap,
+  edgeType: EdgeType,
+  offset: number,
+): boolean => {
+  for (let xOffset = -offset; xOffset <= offset; xOffset++) {
+    for (let yOffset = -offset; yOffset <= offset; yOffset++) {
+      const nx = tile.x + xOffset
+      const ny = tile.y + yOffset
+      if (
+        map.edges[nx] &&
+        map.edges[nx][ny] &&
+        Object.values(map.edges[nx][ny]).includes(edgeType)
+      ) {
+        return true
+      }
+    }
+  }
+  return false
+}
+
+/**
+ * Checks if a tile has any adjacent neighbors of a specified type.
+ *
+ * @param {Point} tile - The tile point to inspect.
+ * @param {GameMap} map - The game map that contains the tile information.
+ * @param {TileType} tileType - The type of tile to check for in the adjacent neighbors.
+ * @returns {boolean} - True if any neighboring tile is of the specified type, false otherwise.
+ *
+ * @example
+ * const isAdjacentToCorridor = isTileAdjacentToType({ x: 5, y: 5 }, gameMap, TileType.CORRIDOR);
+ */
+export const isTileAdjacentToType = (tile: Point, map: GameMap, tileType: TileType): boolean => {
+  const neighbors = getNeighbors(tile.x, tile.y, map)
+  return neighbors.some((neighbor) => map.tiles[neighbor.x][neighbor.y] === tileType)
+}

@@ -9,6 +9,7 @@ export const secretTileColorMapping: Record<TileType, string> = {
   [TileType.TRAP_PITFALL]: '#8b0000',
   [TileType.SPIKES]: '#c79c7f',
   [TileType.LAVA]: '#e57c52',
+  [TileType.SLIDE]: '#8bd4e5',
 }
 
 export const secretEdgeColorMapping: Record<EdgeType, string> = {

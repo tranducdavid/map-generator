@@ -2,14 +2,12 @@ import _ from 'lodash'
 import { ALL_DIRECTIONS_TYPES, EdgeType, GameMap, Point, TileType } from '../types'
 import {
   allSurroundingTilesOfTypes,
-  expandPoints,
   findNearestTile,
   getDistance,
   getNeighbors,
   getPossibleIntersections,
   getUnvisitedNeighbors,
   isWithinDistanceFromBorder,
-  tileHasEdgeType,
 } from './common'
 import { random, sample, shuffle } from '../utils/random'
 import {
@@ -17,6 +15,7 @@ import {
   createEdgesBetweenTiles,
   findRoomCadidateEdge as findDoorCandidate,
 } from './edges'
+import { placeSlideInRoom } from './slides'
 
 /**
  * Grows a room from the specified point on the map, creating an area of connected tiles up to a given size and radius.
@@ -115,6 +114,9 @@ export const growRoom = (
       map.edges[doorCandidate.x][doorCandidate.y]![config.direction] = EdgeType.REINFORCED_DOOR
     }
   })
+
+  // Add a slide
+  map = placeSlideInRoom(map, roomTiles)
 
   return map
 }
