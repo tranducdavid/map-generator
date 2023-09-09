@@ -32,6 +32,7 @@ import { fillMapBorders, shrinkMap } from './map/mapBorders'
 // globalMap.edges[5][5] = { right: EdgeType.EMBRASURE }
 
 const generateMap = () => {
+  // Constants defining the map
   const MAP_WIDTH = 100
   const MAP_HEIGHT = 100
   const WALL_STEP = 8
@@ -42,10 +43,11 @@ const generateMap = () => {
   const ROOM_SIZE_MIN = 0.5
   const ROOM_SIZE_MAX = 0.75
 
+  // Generate Maze
   let globalMap = generateMaze(MAP_WIDTH, MAP_HEIGHT, WALL_STEP, CORRIDOR_STEP)
 
+  // Generate rooms
   const possibleIntersections = shuffle(getPossibleIntersections(globalMap, WALL_STEP))
-
   while (possibleIntersections.length) {
     const intersection = possibleIntersections.pop()!
 
@@ -66,11 +68,17 @@ const generateMap = () => {
     }
   }
 
+  // Remove corridors from map borders
   globalMap = fillMapBorders(globalMap, CORRIDOR_STEP, TileType.WALL)
+
+  // Remove isolated corridors
   globalMap = removeIsolatedCorridors(globalMap)
+
+  // Connect clusters, which were created because of removing the corridors from map borders
   const clusters = findIsolatedClusters(globalMap)
   globalMap = connectClusters(globalMap, clusters, WALL_STEP, CORRIDOR_STEP)
 
+  // Create secret corridors
   const roomOrigins = getTiles(globalMap, TileType.ROOM_ORIGIN)
   roomOrigins.forEach(({ x, y }) => {
     globalMap = createSecretCorridors(
@@ -81,8 +89,10 @@ const generateMap = () => {
     )
   })
 
+  // Shrink map
   globalMap = shrinkMap(globalMap, CORRIDOR_STEP)
 
+  // Export
   const imageBuffer = renderGameMapToImage(globalMap)
   writeFileSync('output.png', imageBuffer)
   writeFileSync('output.json', JSON.stringify(globalMap))
