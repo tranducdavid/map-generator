@@ -30,5 +30,6 @@ yarn-debug.log*
 yarn-error.log*
 
 output.png
+output.json
 consolidate.sh
 consolidated.txt

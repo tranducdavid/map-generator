@@ -1,7 +1,9 @@
 import { writeFileSync } from 'fs'
 import { renderGameMapToImage } from './renderer'
-import { generateMaze, growRoom, removeIsolatedCorridors } from './mapGeneration'
+import { connectClusters, generateMaze, growRoom, removeIsolatedCorridors } from './mapGeneration'
 import {
+  fillMapBorders,
+  findIsolatedClusters,
   findNearestTile,
   getDistance,
   getPossibleIntersections,
@@ -10,6 +12,7 @@ import {
 } from './utils'
 import _ from 'lodash'
 import { TileType } from './types'
+import { random, shuffle } from './random'
 
 // const globalMap = createGameMap(10, 10, TileType.WALL)
 
@@ -38,7 +41,7 @@ const generateMap = () => {
 
   let globalMap = generateMaze(MAP_WIDTH, MAP_HEIGHT, WALL_STEP, CORRIDOR_STEP)
 
-  const possibleIntersections = _.shuffle(getPossibleIntersections(globalMap, WALL_STEP))
+  const possibleIntersections = shuffle(getPossibleIntersections(globalMap, WALL_STEP))
 
   while (possibleIntersections.length) {
     const intersection = possibleIntersections.pop()!
@@ -55,16 +58,21 @@ const generateMap = () => {
         getDistance({ x: intersection.x, y: intersection.y }, nearestRoomOrigin) >
           2 * WALL_STEP + CORRIDOR_STEP - 1)
     ) {
-      const roomSize = Math.round(ROOM_SIZE * _.random(ROOM_SIZE_MIN, ROOM_SIZE_MAX))
+      const roomSize = Math.round(ROOM_SIZE * random(ROOM_SIZE_MIN, ROOM_SIZE_MAX))
       globalMap = growRoom(globalMap, intersection.x, intersection.y, roomSize, ROOM_MAX_RADIUS)
     }
   }
 
-  globalMap = removeMapBorders(globalMap, CORRIDOR_STEP)
+  globalMap = fillMapBorders(globalMap, CORRIDOR_STEP, TileType.WALL)
   globalMap = removeIsolatedCorridors(globalMap)
+  const clusters = findIsolatedClusters(globalMap)
+  console.log('Cluster Length: ', clusters.length)
+  globalMap = connectClusters(globalMap, clusters, WALL_STEP, CORRIDOR_STEP)
+  globalMap = removeMapBorders(globalMap, CORRIDOR_STEP)
 
   const imageBuffer = renderGameMapToImage(globalMap)
   writeFileSync('output.png', imageBuffer)
+  writeFileSync('output.json', JSON.stringify(globalMap))
 }
 
 generateMap()
