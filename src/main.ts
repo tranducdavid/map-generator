@@ -18,6 +18,7 @@ import {
 } from './mappings'
 import { placeTraps } from './map/traps'
 import { placeSlideInRoom } from './map/slides'
+import { placeLadders } from './map/ladders'
 
 // const globalMap = createGameMap(10, 10, TileType.WALL)
 
@@ -73,6 +74,9 @@ const generateMap = () => {
     () => roomsTiles.forEach((roomTiles) => placeSlideInRoom(globalMap, roomTiles)),
     'addSlides',
   )()
+
+  // Add ladders
+  profile(placeLadders)(globalMap, 10)
 
   // Shrink map
   profile(shrinkMap)(globalMap, CORRIDOR_STEP)

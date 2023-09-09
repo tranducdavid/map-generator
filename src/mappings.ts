@@ -11,10 +11,14 @@ export const secretTileColorMapping: Record<TileType, string> = {
   [TileType.LAVA]: '#e57c52',
   [TileType.SLIDE]: '#8bd4e5',
   [TileType.TRAP_SLIDE]: '#8bd4e5',
+  [TileType.LADDER_UP]: '#8eb97e',
+  [TileType.LADDER_DOWN]: '#8eb97e',
 }
 
 export const secretTileTextMapping: Partial<Record<TileType, string>> = {
   [TileType.TRAP_SLIDE]: '💀',
+  [TileType.LADDER_UP]: '^',
+  [TileType.LADDER_DOWN]: 'v',
 }
 
 export const secretEdgeColorMapping: Record<EdgeType, string> = {
@@ -30,6 +34,8 @@ export const publicTileColorMapping: Record<TileType, string> = {
   ...secretTileColorMapping,
   [TileType.SECRET_CORRIDOR]: secretTileColorMapping[TileType.WALL],
   [TileType.TRAP_PITFALL]: secretTileColorMapping[TileType.CORRIDOR],
+  [TileType.LADDER_UP]: secretTileColorMapping[TileType.WALL],
+  [TileType.LADDER_DOWN]: secretTileColorMapping[TileType.WALL],
 }
 
 export const publicEdgeColorMapping: Record<EdgeType, string> = {
