@@ -126,7 +126,7 @@ export const growRoom = (
   EDGE_CONFIGS.forEach((config) => {
     const doorCandidate = findDoorCandidate(config, roomTiles, map, origin)
     if (doorCandidate) {
-      map.edges[doorCandidate.x][doorCandidate.y]![config.edgeKey] = EdgeType.REINFORCED_DOOR
+      map.edges[doorCandidate.x][doorCandidate.y]![config.direction] = EdgeType.REINFORCED_DOOR
     }
   })
 

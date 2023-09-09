@@ -1,35 +1,41 @@
 export enum TileType {
-  CORRIDOR = 'CORRIDOR',
-  SECRET_CORRIDOR = 'SECRET_CORRIDOR',
-  ROOM = 'ROOM',
-  ROOM_ORIGIN = 'ROOM_ORIGIN',
-  WALL = 'WALL',
-  TRAP_PITFALL = 'TRAP_PITFALL',
-  SPIKES = 'SPIKES',
-  LAVA = 'LAVA',
+  CORRIDOR = 'corridor',
+  SECRET_CORRIDOR = 'secretCorridor',
+  ROOM = 'room',
+  ROOM_ORIGIN = 'roomOrigin',
+  WALL = 'wall',
+  TRAP_PITFALL = 'trapPitfall',
+  SPIKES = 'spikes',
+  LAVA = 'lava',
 }
 
 export const ALL_TILE_TYPES: TileType[] = Object.values(TileType) as TileType[]
 
 export enum EdgeType {
-  ROOM_WALL = 'ROOM_WALL',
-  DOOR = 'DOOR',
-  HIDDEN_DOOR = 'HIDDEN_DOOR',
-  REINFORCED_DOOR = 'REINFORCED_DOOR',
-  WINDOW = 'WINDOW',
-  EMBRASURE = 'EMBRASURE',
+  ROOM_WALL = 'roomWall',
+  DOOR = 'door',
+  HIDDEN_DOOR = 'hiddenDoor',
+  REINFORCED_DOOR = 'reinforcedDoor',
+  WINDOW = 'window',
+  EMBRASURE = 'embrasure',
+}
+
+export enum Direction {
+  TOP = 'top',
+  RIGHT = 'right',
+  BOTTOM = 'bottom',
+  LEFT = 'left',
 }
 
 export type Edge = {
-  top?: EdgeType
-  right?: EdgeType
-  bottom?: EdgeType
-  left?: EdgeType
+  [Direction.TOP]?: EdgeType
+  [Direction.RIGHT]?: EdgeType
+  [Direction.BOTTOM]?: EdgeType
+  [Direction.LEFT]?: EdgeType
 }
 
 export type EdgeConfig = {
-  direction: 'north' | 'south' | 'east' | 'west'
-  edgeKey: 'top' | 'bottom' | 'left' | 'right'
+  direction: Direction
   dx: number
   dy: number
   compare: (a: number, b: number) => boolean
