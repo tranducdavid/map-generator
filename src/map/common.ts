@@ -240,3 +240,18 @@ export const getNeighbors = (x: number, y: number, map: GameMap): Point[] => {
 export const isWithinBounds = (x: number, y: number, map: GameMap): boolean => {
   return x >= 0 && y >= 0 && x < map.tiles.length && y < map.tiles[0].length
 }
+
+/**
+ * Retrieves all points of a specific tile type from the given game map.
+ *
+ * @param map - The game map to be scanned.
+ * @param tileType - The specific type of tile for which to find the points.
+ * @returns An array of points where the specified tile type is located.
+ */
+export const getTiles = (map: GameMap, tileType: TileType): Point[] => {
+  return map.tiles
+    .flatMap((row, x) =>
+      row.map((cell, y) => ({ x, y, type: cell })).filter((point) => point.type === tileType),
+    )
+    .map(({ x, y }) => ({ x, y })) // Strip the type information after filtering
+}

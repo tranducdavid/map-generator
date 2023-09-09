@@ -5,13 +5,15 @@ import {
   findNearestTile,
   getDistance,
   getPossibleIntersections,
+  getTiles,
+  getUnvisitedNeighbors,
   isWithinDistanceFromBorder,
 } from './map/common'
 import _ from 'lodash'
-import { TileType } from './types'
+import { ALL_TILE_TYPES, TileType } from './types'
 import { random, shuffle } from './utils/random'
 import { generateMaze } from './map/maze'
-import { removeIsolatedCorridors } from './map/corridors'
+import { createSecretCorridors, removeIsolatedCorridors } from './map/corridors'
 import { growRoom } from './map/rooms'
 import { fillMapBorders, shrinkMap } from './map/mapBorders'
 
@@ -68,6 +70,17 @@ const generateMap = () => {
   globalMap = removeIsolatedCorridors(globalMap)
   const clusters = findIsolatedClusters(globalMap)
   globalMap = connectClusters(globalMap, clusters, WALL_STEP, CORRIDOR_STEP)
+
+  const roomOrigins = getTiles(globalMap, TileType.ROOM_ORIGIN)
+  roomOrigins.forEach(({ x, y }) => {
+    globalMap = createSecretCorridors(
+      globalMap,
+      { x, y },
+      getUnvisitedNeighbors(x, y, globalMap, WALL_STEP, ALL_TILE_TYPES),
+      1,
+    )
+  })
+
   globalMap = shrinkMap(globalMap, CORRIDOR_STEP)
 
   const imageBuffer = renderGameMapToImage(globalMap)

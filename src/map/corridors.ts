@@ -180,3 +180,48 @@ export const createCorridorRectangle = (
     replaceType,
   )
 }
+
+/**
+ * Creates secret corridors from a central point to its neighbors.
+ *
+ * @param map - The original game map.
+ * @param centralPoint - The central point from which corridors are created.
+ * @param neighbors - Array of neighboring points.
+ * @param corridorStep - The width of the secret corridor.
+ * @returns A new game map with the secret corridors.
+ */
+export const createSecretCorridors = (
+  map: GameMap,
+  centralPoint: Point,
+  neighbors: Point[],
+  corridorStep: number,
+): GameMap => {
+  let newMap = _.cloneDeep(map)
+
+  for (const neighbor of neighbors) {
+    // Calculate the direction of the neighbor relative to the central point
+    const deltaX = neighbor.x - centralPoint.x
+    const deltaY = neighbor.y - centralPoint.y
+
+    // Determine corridor dimensions based on the direction
+    const corridorWidth = Math.abs(deltaX) + (Math.abs(deltaX) > 0 ? 0 : corridorStep)
+    const corridorHeight = Math.abs(deltaY) + (Math.abs(deltaY) > 0 ? 0 : corridorStep)
+
+    // Determine starting point of the corridor rectangle
+    const startX = centralPoint.x + (deltaX >= 0 ? 0 : -corridorWidth + 1)
+    const startY = centralPoint.y + (deltaY >= 0 ? 0 : -corridorHeight + 1)
+
+    // Create the corridor towards the neighbor
+    newMap = createRectangleInMap(
+      newMap,
+      startX,
+      startY,
+      corridorWidth,
+      corridorHeight,
+      TileType.SECRET_CORRIDOR,
+      TileType.WALL,
+    )
+  }
+
+  return newMap
+}
