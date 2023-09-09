@@ -18,24 +18,27 @@ import {
 import { placeSlideInRoom } from './slides'
 
 /**
- * Grows a room from the specified point on the map, creating an area of connected tiles up to a given size and radius.
+ * Grows a room from a specified point on the map, creating a connected area of tiles constrained by given size and radius.
  *
- * The function works by expanding outwards from the given point, converting tiles of overridable types (e.g., `WALL` and `CORRIDOR`)
- * into room tiles. The growth is controlled by parameters like `maxSize` and `maxRadius`, ensuring the room doesn't exceed the desired
- * boundaries.
+ * This function expands from the provided start point, converting overridable tiles like `WALL` and `CORRIDOR`
+ * into room tiles. The growth respects the provided `maxSize` and `maxRadius` parameters to ensure the room doesn't
+ * exceed the intended boundaries.
  *
- * In addition to growing the room, the function can also transform corridors enclosed by rooms or walls into room tiles, and walls enclosed by rooms into room tiles.
- * It also takes care of setting room origin and edges, and adding reinforced doors on the room's edges.
+ * As the room grows, corridors completely enclosed by rooms or walls are converted into room tiles. Similarly, walls
+ * that are entirely surrounded by rooms will also be transformed into room tiles.
  *
- * @param {GameMap} map - The initial game map where the room should be grown.
- * @param {number} x - The x-coordinate of the point where the room should start growing.
- * @param {number} y - The y-coordinate of the point where the room should start growing.
- * @param {number} maxSize - The maximum number of tiles the room can occupy.
- * @param {number} maxRadius - The maximum distance from the origin (in tiles) the room can grow.
- * @returns {GameMap} - A new map with the grown room.
+ * The function is also responsible for setting the room's origin, defining its edges, and placing reinforced doors
+ * at appropriate locations on the room's boundaries.
+ *
+ * @param {GameMap} map - The starting game map where the room will grow.
+ * @param {number} x - The x-coordinate of the starting point for room growth.
+ * @param {number} y - The y-coordinate of the starting point for room growth.
+ * @param {number} maxSize - The upper limit on the number of tiles the room can span.
+ * @param {number} maxRadius - The furthest distance (in tiles) the room can grow from its origin.
+ * @returns {{ map: GameMap; roomTiles: Point[] }} - The modified map with the new room and a list of the room's tiles.
  *
  * @example
- * const updatedMap = growRoom(initialMap, 5, 5, 20, 4);
+ * const { updatedMap, roomTiles } = growRoom(initialMap, 5, 5, 20, 4);
  */
 export const growRoom = (
   map: GameMap,
@@ -43,9 +46,9 @@ export const growRoom = (
   y: number,
   maxSize: number,
   maxRadius: number,
-): GameMap => {
+): { map: GameMap; roomTiles: Point[] } => {
   if (maxSize < 1) {
-    return map
+    return { map, roomTiles: [] }
   }
 
   const origin: Point = { x, y }
@@ -115,10 +118,7 @@ export const growRoom = (
     }
   })
 
-  // Add a slide
-  map = placeSlideInRoom(map, roomTiles)
-
-  return map
+  return { map, roomTiles }
 }
 
 /**
@@ -132,7 +132,7 @@ export const growRoom = (
  * @param roomSizeMin - Indicating the minimum size multiplier for the room.
  * @param roomSizeMax - Indicating the maximum size multiplier for the room.
  *
- * @returns The game map.
+ * @returns {{ map: GameMap; roomsTiles: Point[][] }} - The modified map with the rooms.
  */
 export const generateRoomsAtIntersections = (
   map: GameMap,
@@ -142,8 +142,9 @@ export const generateRoomsAtIntersections = (
   roomSize: number,
   roomSizeMin: number,
   roomSizeMax: number,
-): GameMap => {
+): { map: GameMap; roomsTiles: Point[][] } => {
   const possibleIntersections = shuffle(getPossibleIntersections(map, wallStep))
+  const roomsTiles: Point[][] = []
 
   while (possibleIntersections.length) {
     const intersection = possibleIntersections.pop()!
@@ -161,9 +162,10 @@ export const generateRoomsAtIntersections = (
           2 * wallStep + corridorStep - 1)
     ) {
       const currentRoomSize = Math.round(roomSize * random(roomSizeMin, roomSizeMax))
-      map = growRoom(map, intersection.x, intersection.y, currentRoomSize, roomMaxRadius)
+      const result = growRoom(map, intersection.x, intersection.y, currentRoomSize, roomMaxRadius)
+      roomsTiles.push(result.roomTiles)
     }
   }
 
-  return map
+  return { map, roomsTiles }
 }

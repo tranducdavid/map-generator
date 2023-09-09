@@ -17,6 +17,7 @@ import {
   secretTileTextMapping,
 } from './mappings'
 import { placeTraps } from './map/traps'
+import { placeSlideInRoom } from './map/slides'
 
 // const globalMap = createGameMap(10, 10, TileType.WALL)
 
@@ -49,26 +50,32 @@ const generateMap = () => {
 
   // Generate rooms
   // prettier-ignore
-  globalMap = profile(generateRoomsAtIntersections)( globalMap, WALL_STEP, CORRIDOR_STEP, ROOM_MAX_RADIUS, ROOM_SIZE, ROOM_SIZE_MIN, ROOM_SIZE_MAX)
+  const {roomsTiles} = profile(generateRoomsAtIntersections)(globalMap, WALL_STEP, CORRIDOR_STEP, ROOM_MAX_RADIUS, ROOM_SIZE, ROOM_SIZE_MIN, ROOM_SIZE_MAX)
 
   // Remove corridors from map borders
-  globalMap = profile(fillMapBorders)(globalMap, CORRIDOR_STEP, TileType.WALL)
+  profile(fillMapBorders)(globalMap, CORRIDOR_STEP, TileType.WALL)
 
   // Remove isolated corridors
-  globalMap = profile(removeIsolatedCorridors)(globalMap)
+  profile(removeIsolatedCorridors)(globalMap)
 
   // Connect clusters, which were created because of removing the corridors from map borders
   const clusters = profile(findIsolatedClusters)(globalMap)
-  globalMap = profile(connectClusters)(globalMap, clusters, WALL_STEP, CORRIDOR_STEP)
+  profile(connectClusters)(globalMap, clusters, WALL_STEP, CORRIDOR_STEP)
 
   // Create secret corridors
-  globalMap = profile(generateSecretCorridorsFromRoomOrigins)(globalMap, WALL_STEP)
+  profile(generateSecretCorridorsFromRoomOrigins)(globalMap, WALL_STEP)
 
   // Place traps
-  globalMap = profile(placeTraps)(globalMap, 10)
+  profile(placeTraps)(globalMap, 10)
+
+  // Add slides
+  profile(
+    () => roomsTiles.forEach((roomTiles) => placeSlideInRoom(globalMap, roomTiles)),
+    'addSlides',
+  )()
 
   // Shrink map
-  globalMap = profile(shrinkMap)(globalMap, CORRIDOR_STEP)
+  profile(shrinkMap)(globalMap, CORRIDOR_STEP)
 
   // Export
   writeFileSync(
