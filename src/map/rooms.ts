@@ -1,7 +1,8 @@
 import _ from 'lodash'
-import { EdgeType, GameMap, Point, TileType } from '../types'
+import { ALL_DIRECTIONS_TYPES, EdgeType, GameMap, Point, TileType } from '../types'
 import {
   allSurroundingTilesOfTypes,
+  expandPoints,
   findNearestTile,
   getDistance,
   getNeighbors,
@@ -11,7 +12,11 @@ import {
   tileHasEdgeType,
 } from './common'
 import { random, sample, shuffle } from '../utils/random'
-import { EDGE_CONFIGS, findRoomCadidateEdge as findDoorCandidate } from './edges'
+import {
+  EDGE_CONFIGS,
+  createEdgesBetweenTiles,
+  findRoomCadidateEdge as findDoorCandidate,
+} from './edges'
 
 /**
  * Grows a room from the specified point on the map, creating an area of connected tiles up to a given size and radius.
@@ -95,32 +100,13 @@ export const growRoom = (
   // Set room origin
   map.tiles[x][y] = TileType.ROOM_ORIGIN
 
-  // Set edges of the room to walls
-  roomTiles.forEach(({ x: rx, y: ry }) => {
-    // Check each neighbor of the room tile
-    ;[
-      { x: rx + 1, y: ry },
-      { x: rx - 1, y: ry },
-      { x: rx, y: ry + 1 },
-      { x: rx, y: ry - 1 },
-    ].forEach((neighbor) => {
-      if (
-        map.tiles[neighbor.x] &&
-        map.tiles[neighbor.x][neighbor.y] !== TileType.ROOM &&
-        map.tiles[neighbor.x][neighbor.y] !== TileType.ROOM_ORIGIN
-      ) {
-        if (neighbor.x > rx) {
-          map.edges[rx][ry].right = EdgeType.ROOM_WALL
-        } else if (neighbor.x < rx) {
-          map.edges[rx][ry].left = EdgeType.ROOM_WALL
-        } else if (neighbor.y > ry) {
-          map.edges[rx][ry].bottom = EdgeType.ROOM_WALL
-        } else if (neighbor.y < ry) {
-          map.edges[rx][ry].top = EdgeType.ROOM_WALL
-        }
-      }
-    })
-  })
+  // Add walls
+  // prettier-ignore
+  map = createEdgesBetweenTiles(map, roomTiles, [TileType.ROOM, TileType.ROOM_ORIGIN], [TileType.WALL], EdgeType.ROOM_WALL, EdgeType.ROOM_WALL, ALL_DIRECTIONS_TYPES, true, false)
+
+  // Add embrasures
+  // prettier-ignore
+  map = createEdgesBetweenTiles(map, roomTiles, [TileType.ROOM, TileType.ROOM_ORIGIN], [TileType.CORRIDOR], EdgeType.EMBRASURE, EdgeType.EMBRASURE, ALL_DIRECTIONS_TYPES, true, false)
 
   // Add doors
   EDGE_CONFIGS.forEach((config) => {

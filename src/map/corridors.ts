@@ -218,6 +218,7 @@ export const createSecretCorridors = (
       TileType.WALL,
     )
 
+    // Create secret doors
     const roomTiles = getRectanglePoints(map, startX, startY, corridorWidth, corridorHeight)
     map = createEdgesBetweenTiles(
       map,
@@ -225,6 +226,7 @@ export const createSecretCorridors = (
       [TileType.SECRET_CORRIDOR],
       [TileType.CORRIDOR, TileType.ROOM, TileType.ROOM_ORIGIN],
       EdgeType.HIDDEN_DOOR,
+      undefined,
       isHorizontal ? HORIZONTAL_DIRECTION_TYPES : VERTICAL_DIRECTION_TYPES,
     )
   }

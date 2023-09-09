@@ -336,3 +336,30 @@ export const getRectanglePoints = (
 
   return points
 }
+
+/**
+ * Expands the provided points in each cardinal direction by one tile.
+ *
+ * For each point in the list, this function will return the original point as well
+ * as its neighbors in the top, right, bottom, and left directions, without duplicates.
+ *
+ * @param {Point[]} points - An array of points to expand.
+ * @returns {Point[]} - The expanded list of points without duplicates.
+ */
+export const expandPoints = (points: Point[]): Point[] => {
+  const pointSet = new Set<string>()
+
+  for (const point of points) {
+    // Add the original point
+    pointSet.add(JSON.stringify(point))
+
+    // Add neighbors in each direction
+    pointSet.add(JSON.stringify({ x: point.x, y: point.y - 1 })) // Top
+    pointSet.add(JSON.stringify({ x: point.x + 1, y: point.y })) // Right
+    pointSet.add(JSON.stringify({ x: point.x, y: point.y + 1 })) // Bottom
+    pointSet.add(JSON.stringify({ x: point.x - 1, y: point.y })) // Left
+  }
+
+  // Convert the unique stringified points back to Point objects
+  return Array.from(pointSet).map((pointStr) => JSON.parse(pointStr))
+}
