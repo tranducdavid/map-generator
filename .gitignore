@@ -4,9 +4,6 @@ node_modules/
 # TypeScript build output
 dist/
 
-# TypeScript type definitions
-*.d.ts
-
 # Editor folders and files
 .vscode/
 *.code-workspace
@@ -32,4 +29,5 @@ yarn-error.log*
 output.png
 output.json
 consolidate.sh
+consolidateTypes.sh
 consolidated.txt
